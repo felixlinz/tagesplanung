@@ -1,15 +1,28 @@
 from datetime import date, timedelta, datetime
 from workalendar.europe import Germany
 import pandas as pd
-from interface import TourSelectionGUI, create_gui
+from interface import TourGui, create_gui
 
 def main():
     filename = "Personalplanung 2023.xlsx"
-    create_gui()
+    gui = TourGui()
+    gui.run()
+    touren = gui.tour_selections
     werktag = get_next_working_day(date.today())
     data = learn_data_from_excel(filename=filename, desired_date=werktag)
-    print(data)
+    filtered = filter_df_by_selected_tours(data, touren)
+    print(filtered)
     
+    
+def filter_df_by_selected_tours(df, selected_tours):
+    # Extract just the tour numbers from the selected tours ignoring the Welle
+    selected_tour_numbers = [tour[0] for tour in selected_tours]
+
+    # Filter the dataframe based on these tour numbers
+    filtered_df = df[df['Stammtour'].isin(selected_tour_numbers)]
+
+    return filtered_df
+
 
 
 def get_next_working_day(current_day):
