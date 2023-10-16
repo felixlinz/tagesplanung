@@ -1,17 +1,18 @@
 from datetime import date, timedelta, datetime
 from workalendar.europe import Germany
 import pandas as pd
-from interface import TourGui, create_gui
+from interface import TourGui
 
 def main():
     filename = "Personalplanung 2023.xlsx"
     gui = TourGui()
     gui.run()
-    touren = gui.tour_selections
-    werktag = get_next_working_day(date.today())
+    print(gui.dates)
+    touren = gui.get_selected_tours()
+    werktag = gui.get_next_working_day(date.today())
     data = learn_data_from_excel(filename=filename, desired_date=werktag)
     filtered = filter_df_by_selected_tours(data, touren)
-    print(filtered)
+    #print(data)
     
     
 def filter_df_by_selected_tours(df, selected_tours):
@@ -20,22 +21,10 @@ def filter_df_by_selected_tours(df, selected_tours):
 
     # Filter the dataframe based on these tour numbers
     filtered_df = df[df['Stammtour'].isin(selected_tour_numbers)]
-
+    print(df)
+    print(filtered_df)
     return filtered_df
 
-
-
-def get_next_working_day(current_day):
-    cal = Germany()
-    
-    # Increment by one day to start
-    next_day = current_day + timedelta(days=1)
-    
-    # While the next_day is a holiday or Sunday, keep moving to the next day
-    while next_day.weekday() == 6 or cal.is_holiday(next_day): 
-        next_day += timedelta(days=1)
-
-    return next_day
 
 def learn_data_from_excel(filename: str, desired_date: datetime.date) -> pd.DataFrame:
     """
