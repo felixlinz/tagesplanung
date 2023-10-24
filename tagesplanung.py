@@ -22,8 +22,8 @@ def filter_df_by_selected_tours(df, selected_tours):
 
     # Filter the dataframe based on these tour numbers
     filtered_df = df[df['Stammtour'].isin(selected_tour_numbers)]
-    print(df)
-    print(filtered_df)
+    #print(df)
+    #print(filtered_df)
     return filtered_df
 
 
