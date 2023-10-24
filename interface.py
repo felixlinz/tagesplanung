@@ -1,7 +1,7 @@
 import pandas as pd
 import tkinter as tk
 from tkinter import ttk
-from data_manager import *
+import data_manager
 from datetime import date, timedelta, datetime
 from workalendar.europe import Germany
 
@@ -29,6 +29,14 @@ class TourGui:
         self.pages = [self.page_one, self.page_two, self.page_three]
         self.current_page_index = 0
 
+
+         #figuere out dates that are editable
+        self.tomorrow = self.get_next_working_day(date.today())
+        self.day_after = self.get_next_working_day(self.tomorrow)
+        self.dates = [self.tomorrow, self.day_after, self.get_next_working_day(self.day_after)]
+        self.selected_date = self.tomorrow
+        
+        
         # Display initial page
         self.pages[self.current_page_index]()
         
@@ -36,20 +44,18 @@ class TourGui:
         self.selected_tour_amount = None
         self.selected_beiwagen_amount = None
         
-        #figuere out dates that are editable
-        self.tomorrow = self.get_next_working_day(date.today())
-        self.day_after = self.get_next_working_day(self.tomorrow)
-        self.dates = [self.tomorrow, self.day_after, self.get_next_working_day(self.day_after)]
-        self.selected_date = self.tomorrow
+        self.tour_selections = []
+        
         
     def get_selected_tours(self):
         selected_tours = set()
 
         for idx, (chk_var, radio_var) in enumerate(self.tour_selections, 1):
-            if chk_var.get():
-                tour = f"{idx:03}" 
-                wave = "1" if radio_var.get() == "1. Welle" else "2"
-                selected_tours.add((tour, wave))
+            
+            tour = f"{idx:03}" 
+            wave = "1" if radio_var.get() == "1. Welle" else "2"
+            check = chk_var.get()
+            selected_tours.add((tour, wave, check))
 
         return selected_tours
 
@@ -63,38 +69,53 @@ class TourGui:
     def page_one(self):
         self.clear_frame()
 
-        # Create date selection buttons at the top
+
+        # --- Date Selection ---
         date_frame = ttk.Frame(self.page_frame)
-        date_frame.grid(row=0, column=0, columnspan=2, pady=(10, 20))
+        date_frame.grid(row=0, column=0, columnspan=2, padx=20, pady=20, sticky=tk.W)
+
+        # Single StringVar for all radio buttons
+        self.selected_date = tk.StringVar()
+
+        # Callback function to respond to date changes
+        def on_date_change(*args):
+            # Here, you can perform any other logic you might need when the date changes
+            print(f"Selected date: {self.selected_date.get()}")
+
+        self.selected_date.trace("w", on_date_change)
 
         for d in self.dates:
-            btn = ttk.Button(date_frame, text=d.strftime('%d.%m.%Y'), command=lambda date=d: self.date_selected(date))
-            btn.pack(side=tk.LEFT, padx=10)
+            date_str = d.strftime('%Y-%m-%d')
+            ttk.Radiobutton(date_frame, text=date_str, variable=self.selected_date, value=date_str).pack(side=tk.LEFT, padx=10)
 
+        # Default selection
+        self.selected_date.set(self.dates[0])  # The first date is selected by default
+
+
+        # --- Tour and Beiwagen Amount ---
         # Label for "Number of tours:"
         lbl_tours = ttk.Label(self.page_frame, text="Touren:")
-        lbl_tours.grid(row=0, column=0, padx=20, pady=20, sticky=tk.W)
+        lbl_tours.grid(row=1, column=0, padx=20, pady=20, sticky=tk.W)
 
         # Spinbox for tour selection
         self.tour_amount = tk.StringVar(value="29")  # default value set to 29
         spinbox_tours = ttk.Spinbox(self.page_frame, from_=1, to=100, textvariable=self.tour_amount, increment=1, width=5)
-        spinbox_tours.grid(row=0, column=1, padx=20, pady=20, sticky=tk.W)
+        spinbox_tours.grid(row=1, column=1, padx=20, pady=20, sticky=tk.W)
 
         # Label for "Beiwagen"
         lbl_beiwagen = ttk.Label(self.page_frame, text="Beiwagen:")
-        lbl_beiwagen.grid(row=1, column=0, padx=20, pady=20, sticky=tk.W)
+        lbl_beiwagen.grid(row=2, column=0, padx=20, pady=20, sticky=tk.W)
 
         # Spinbox for "Beiwagen"
         self.beiwagen_amount = tk.StringVar(value="2")  # default value set to 2
         spinbox_beiwagen = ttk.Spinbox(self.page_frame, from_=1, to=100, textvariable=self.beiwagen_amount, increment=1, width=5)
-        spinbox_beiwagen.grid(row=1, column=1, padx=20, pady=20, sticky=tk.W)
+        spinbox_beiwagen.grid(row=2, column=1, padx=20, pady=20, sticky=tk.W)
 
 
     def page_two(self):
         self.clear_frame()
 
-        # Generate tour list with checkbox and radio buttons
-        self.tour_selections = []
+        # Generate tour list with checkbox and radio button
 
         columns = 3
         rows_per_column = (self.selected_tour_amount + columns - 1) // columns
@@ -148,11 +169,17 @@ class TourGui:
         # If on the second page, save the selected tours to a set
         elif self.current_page_index == 1:
             self.saved_selections = self.get_selected_tours()
+            self.weiter_btn.config(text="Fertig")
 
         # Increment page and show
         self.current_page_index += 1
+        
         if self.current_page_index < len(self.pages):
             self.pages[self.current_page_index]()
+        
+        if self.current_page_index == len(self.pages):
+        # Assuming you are on the last page:
+            self.root.destroy()  # This closes the main window
             
             
     def date_selected(self, selected_date):
@@ -174,6 +201,16 @@ class TourGui:
 
         return next_day
         
+        
+    def save(self):
+        """
+        save
+        """
+        # Convert StringVar value to datetime.date object
+        date_str = self.selected_date.get()
+        selected_date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+
+        data_manager.save_data(selected_date_obj, self.get_selected_tours())
 
 
     def run(self):

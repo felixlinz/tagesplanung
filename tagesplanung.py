@@ -5,9 +5,10 @@ from interface import TourGui
 
 def main():
     filename = "Personalplanung 2023.xlsx"
+    #print(learn_data_from_excel(filename = filename, desired_date = date.today()))
     gui = TourGui()
     gui.run()
-    print(gui.dates)
+    gui.save()
     touren = gui.get_selected_tours()
     werktag = gui.get_next_working_day(date.today())
     data = learn_data_from_excel(filename=filename, desired_date=werktag)
