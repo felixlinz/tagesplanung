@@ -116,7 +116,7 @@ def load_time_values():
                 return tuple(row)
 
 
-def learn_data_from_excel(filename: str, desired_date: datetime.date) -> pd.DataFrame:
+def learn_data_from_excel(desired_date: datetime.date) -> pd.DataFrame:
     """
     Extract specific data from the Excel file based on a given date.
     
@@ -127,6 +127,8 @@ def learn_data_from_excel(filename: str, desired_date: datetime.date) -> pd.Data
     Returns:
     - DataFrame: Extracted data
     """
+    
+    filename = "Personalplanung 2023.xlsx"
 
     # Read the excel file using pandas
     df = pd.read_excel(filename, engine='openpyxl', header=None)

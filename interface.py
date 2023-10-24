@@ -55,6 +55,7 @@ class TourGui:
         # Variables for Tour and Beiwagen Count
         self.selected_tour_amount = None
         self.selected_beiwagen_amount = None
+        self.selected_highest_tour = None
         
         self.tour_selections = []
         
@@ -110,7 +111,7 @@ class TourGui:
         def on_date_change(*args):
             # Here, you can perform any other logic you might need when the date changes
             self.besetzung = data_manager.load_data(datetime.strptime(self.selected_date.get(), '%Y-%m-%d').strftime('%A'))
-        
+            self.dataframe = data_manager.learn_data_from_excel(datetime.strptime(self.selected_date.get(), '%Y-%m-%d').date())
             # print("dataloader: ", self.besetzung)
             print(f"Selected date: {self.selected_date.get()}")
 
@@ -149,7 +150,7 @@ class TourGui:
 
         # Generate tour list with checkbox and radio button
 
-        highest_tour_number = int(max(self.besetzung, key=lambda x: x[0])[0])
+        highest_tour_number = 48
         columns = 3
         rows_per_column = (highest_tour_number + columns - 1) // columns
 
@@ -208,6 +209,8 @@ class TourGui:
         self.pages[self.current_page_index]()
 
     def next_page(self):
+        # Increment page and show
+        self.current_page_index += 1
         # Save the selected values if on the first page
         if self.current_page_index == 0:
             self.selected_tour_amount = int(self.tour_amount.get())
@@ -221,12 +224,9 @@ class TourGui:
             print(self.time_1_welle, self.time_2_welle)
             
         # If on the second page, save the selected tours to a set
-        elif self.current_page_index == 1:
+        if self.current_page_index == 1:
             self.saved_selections = self.get_selected_tours()
             self.weiter_btn.config(text="Fertig")
-
-        # Increment page and show
-        self.current_page_index += 1
         
         if self.current_page_index < len(self.pages):
             self.pages[self.current_page_index]()
