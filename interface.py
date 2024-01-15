@@ -36,7 +36,6 @@ class TourGui:
         self.tomorrow = self.get_next_working_day(date.today())
         self.day_after = self.get_next_working_day(self.tomorrow)
         self.dates = [self.tomorrow, self.day_after, self.get_next_working_day(self.day_after)]
-        self.selected_date = self.tomorrow
         
         # beginning times 
         self.time_1_welle_string, self.time_2_welle_string = data_manager.load_time_values()
@@ -216,7 +215,8 @@ class TourGui:
             self.selected_tour_amount = int(self.tour_amount.get())
             self.selected_beiwagen_amount = int(self.beiwagen_amount.get())
             
-            if self.time_1_entry.get() != self.time_1_entry or self.time_2_welle.get():
+            if self.time_1_welle.get() != self.time_1_welle_string or self.time_2_welle.get() != self.time_2_welle_string:
+
                 self.time_1_welle = self.time_1_entry.get()
                 self.time_2_welle = self.time_2_entry.get()
                 data_manager.save_time_values([self.time_1_welle, self.time_2_welle])
@@ -244,16 +244,8 @@ class TourGui:
         # Any additional logic can be added here if you want UI updates based on date selection
 
     def get_next_working_day(self, current_day):
-        cal = Germany()
         
-        # Increment by one day to start
-        next_day = current_day + timedelta(days=1)
-        
-        # While the next_day is a holiday or Sunday, keep moving to the next day
-        while next_day.weekday() == 6 or cal.is_holiday(next_day): 
-            next_day += timedelta(days=1)
-
-        return next_day
+        return data_manager.get_next_working_day(current_day)
         
         
     def save(self):
@@ -269,38 +261,7 @@ class TourGui:
 
     def run(self):
         self.root.mainloop()
-        
-    """
-    def timepick(self):
-    """
-       #Open a new window with the AnalogPicker for time selection.
-    """
-       # Create new top-level window
-       top = tk.Toplevel(self.page_frame)
-       top.title("Select Time")
-
-       # Create AnalogPicker widget
-       picker = AnalogPicker(top)
-       picker.pack(pady=20)
-
-       # Callback for the "Confirm" button
-       def confirm_time():
-           selected_time = picker.get()
-           formatted_time = selected_time.strftime('%H:%M')
-           
-           # Update the associated StringVar
-           # You might want to know which of the two times you're setting
-           # For this example, I'm setting it to the first one.
-           # You may need a more advanced logic if you have multiple time pickers
-           self.time_1_welle.set(formatted_time)
-
-           # Close the top-level window
-           top.destroy()
-
-       confirm_btn = ttk.Button(top, text="Confirm", command=confirm_time)
-       confirm_btn.pack(pady=20)
-    """
-
+    
 
 if __name__ == "__main__":
     gui = TourGui()

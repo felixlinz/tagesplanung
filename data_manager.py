@@ -1,8 +1,9 @@
 import csv
 import os
-from datetime import datetime
+from datetime import datetime, date, timedelta
 import os
 import pandas as pd
+from workalendar.europe import Germany
 
 def delete_data_file(file_path="data.csv"):
     """
@@ -160,5 +161,19 @@ def learn_data_from_excel(desired_date: datetime.date) -> pd.DataFrame:
     return extracted_data
 
 
-if __name__=="__name__":
-    main()
+def get_next_working_day(current_day):
+    cal = Germany()
+    
+    # Increment by one day to start
+    next_day = current_day + timedelta(days=1)
+    
+    # While the next_day is a holiday or Sunday, keep moving to the next day
+    while next_day.weekday() == 6 or cal.is_holiday(next_day): 
+        next_day += timedelta(days=1)
+
+    return next_day
+
+
+
+"""if __name__=="__name__":
+    main()"""
