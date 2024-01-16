@@ -13,10 +13,17 @@ class ColorChangingButton:
         self.label.pack(expand=True, fill="both")
         self.frame.pack(fill="x")
 
-        # Bind events
-        self.frame.bind("<Enter>", self.on_enter)
-        self.frame.bind("<Leave>", self.on_leave)
-        self.frame.bind("<Button-1>", self.on_click)
+        # Enable the frame to take focus
+        self.frame.focus_set()
+
+        # Bind events to both frame and label
+        self.bind_widgets("<Enter>", self.on_enter)
+        self.bind_widgets("<Leave>", self.on_leave)
+        self.bind_widgets("<Button-1>", self.on_click)
+
+    def bind_widgets(self, event, handler):
+        self.frame.bind(event, handler)
+        self.label.bind(event, handler)
 
     def on_enter(self, event):
         if not self.active:
@@ -31,34 +38,22 @@ class ColorChangingButton:
     def on_click(self, event):
         self.activate_button()
         if self.command:
-            self.command(self)
+            self.command()
 
     def activate_button(self):
         self.active = True
-        self.frame.config(bg="dark blue")
-        self.label.config(bg="dark blue", fg="white")
+        self.frame.config(bg="#007aff")
+        self.label.config(bg="#007aff", fg="white")
 
     def deactivate_button(self):
         self.active = False
         self.frame.config(bg="light grey")
         self.label.config(bg="light grey", fg="black")
 
-def menu_command(clicked_button):
-    # Reset all buttons except the clicked one
+def deactivate_other_buttons(except_button):
     for button in buttons:
-        if button != clicked_button:
+        if button != except_button:
             button.deactivate_button()
 
-# Create main window
-root = tk.Tk()
-root.title("Side Menu Example")
 
-# Create a list to store buttons
-buttons = []
 
-# Create and add buttons to the list
-for i in range(5):
-    button = ColorChangingButton(root, f"Menu Item {i+1}", menu_command)
-    buttons.append(button)
-
-root.mainloop()

@@ -4,6 +4,7 @@ from datetime import datetime, date, timedelta
 import os
 import pandas as pd
 from workalendar.europe import Germany
+import locale
 
 def delete_data_file(file_path="data.csv"):
     """
@@ -25,6 +26,45 @@ def delete_data_file(file_path="data.csv"):
     else:
         print(f"'{file_path}' does not exist.")
         return False
+
+
+class TimeManager:
+    def __init__(self, filename="startzeiten.csv"):
+        self.filename = filename
+        self.times = {}
+        if not os.path.exists(self.filename):
+            self.create_initial_file()
+
+    def read_times(self):
+        with open(self.filename, mode='r') as file:
+            reader = csv.reader(file)
+            self.times = {rows[0]: rows[1] for rows in reader}
+        return self.times
+
+    def save_times(self, new_times):
+        with open(self.filename, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            for label, time in new_times.items():
+                writer.writerow([label, time])
+
+
+
+class DailyHoursManager:
+    def __init__(self, filename="daily_hours.csv"):
+        self.filename = filename
+        self.hours = {}
+
+    def read_hours(self):
+        with open(self.filename, mode='r') as file:
+            reader = csv.reader(file)
+            self.hours = {rows[0]: rows[1] for rows in reader}
+        return self.hours
+
+    def save_hours(self, new_hours):
+        with open(self.filename, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            for day, hours in new_hours.items():
+                writer.writerow([day, hours])
 
 
 # Define constants
@@ -161,6 +201,7 @@ def learn_data_from_excel(desired_date: datetime.date) -> pd.DataFrame:
     return extracted_data
 
 
+
 def get_next_working_day(current_day):
     cal = Germany()
     
@@ -174,6 +215,20 @@ def get_next_working_day(current_day):
     return next_day
 
 
+def format_date_with_weekday(date_obj):
+    # Dictionary for translating weekdays from English to German
+    weekdays_translation = {
+        "Monday": "Montag",
+        "Tuesday": "Dienstag",
+        "Wednesday": "Mittwoch",
+        "Thursday": "Donnerstag",
+        "Friday": "Freitag",
+        "Saturday": "Samstag"
+    }
 
-"""if __name__=="__name__":
-    main()"""
+    english_weekday = date_obj.strftime("%A")
+    german_weekday = weekdays_translation.get(english_weekday, english_weekday)
+    return german_weekday + date_obj.strftime(" %Y-%m-%d")
+
+if __name__=="__name__":
+    main()
