@@ -230,5 +230,25 @@ def format_date_with_weekday(date_obj):
     german_weekday = weekdays_translation.get(english_weekday, english_weekday)
     return german_weekday + date_obj.strftime(" %Y-%m-%d")
 
+
+def sort_workers(df):
+    # Convert 'Stammtour' to numeric, replacing non-numeric values with NaN
+    df['Stammtour'] = pd.to_numeric(df['Stammtour'], errors='coerce')
+
+    # Convert the series to a nullable integer type
+    df['Stammtour'] = df['Stammtour'].astype('Int64')
+
+    # Filter rows where 'Stammtour' is a number and 'Einsatz' equals the integer 1
+    filtered_df_numeric = df[(df['Stammtour'].notna()) & (df['Einsatz'] == 1)]
+
+    # Sort the filtered DataFrame by 'Stammtour' in ascending order
+    sorted_df_numeric = filtered_df_numeric.sort_values(by='Stammtour').reset_index(drop=True)
+
+    # Filter rows where 'Stammtour' equals 's' and 'Einsatz' equals '1'
+    filtered_df_s = df[(df['Stammtour'].astype(str) == 's') & (df['Einsatz'] == 1)]
+
+    # Return both DataFrames
+    return sorted_df_numeric, filtered_df_s
+
 if __name__=="__name__":
     main()
