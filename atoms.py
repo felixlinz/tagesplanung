@@ -7,8 +7,8 @@ class ColorChangingButton:
         self.active = False
 
         # Create frame and label
-        self.frame = tk.Frame(master, bg="light grey", bd=1)
-        self.label = tk.Label(self.frame, text=text, bg="light grey", fg="black")
+        self.frame = tk.Frame(master, bg="white", bd=1)
+        self.label = tk.Label(self.frame, text=text, bg="white", fg="black")
 
         self.label.pack(expand=True, fill="both")
         
@@ -52,8 +52,8 @@ class ColorChangingButton:
 
     def deactivate_button(self):
         self.active = False
-        self.frame.config(bg="light grey")
-        self.label.config(bg="light grey", fg="black")
+        self.frame.config(bg="light blue")
+        self.label.config(bg="light blue", fg="black")
 
 def deactivate_other_buttons(except_button):
     for button in buttons:
@@ -62,49 +62,49 @@ def deactivate_other_buttons(except_button):
 
 
 
-
-
 class TourItem(tk.Frame):
     """
-    should take 1/2 as argument to be constrcucted instead of time, only use time if "other" is clicked
-    on construction. 
-    Should be usable as a creation element as well.
-    Default one toggle button needs to be colored. 
-    Stock white space the same size as the edit field that might pop up
-    Fix Name 
-    Check if it still works with the Menu that has been using it prebiously
-    
-    
+    A custom Tkinter Frame widget representing a tour item.
+
+    Parameters:
+    - master: The parent widget.
+    - number (str): The number of the tour.
+    - time (str): Time associated with the tour, used to set initial toggle state.
+    - delete_callback (function): A callback function to handle deletion of the tour item.
+
+    Attributes:
+    - label: Displays the tour number.
+    - button1, button2, button_other: Toggle buttons for selecting tour types.
+    - edit_field: An entry field for input, visible when 'other' is selected.
+    - delete_button: A red, round button to delete this tour item.
+    - toggle_state: The current state of the toggle buttons.
+    - stored_time: The saved time value for the tour item.
     """
-    
     def __init__(self, master, number, time, delete_callback):
         super().__init__(master)
         self.number = number
-        self.time = time
+        self.stored_time = time
         self.delete_callback = delete_callback
         self.toggle_state = None
 
-        # Display Tour number and time
-        self.label = tk.Label(self, text=f"Tour {number:03d} - {time}", font=("Arial", 12, "bold"))
-        self.label.grid(row=0, column=0, sticky="w")
+        self.label = tk.Label(self, text=f"{number}", font=("Arial", 12, "bold"))
+        self.label.grid(row=0, column=0, sticky="w", padx=16)
 
-        # ColorChangingButtons for "1", "2", and "other"
         self.button1 = ColorChangingButton(self, text="1", command=lambda: self.set_toggle_state("1"), grid_options={'row': 0, 'column': 1})
         self.button2 = ColorChangingButton(self, text="2", command=lambda: self.set_toggle_state("2"), grid_options={'row': 0, 'column': 2})
-        self.button_other = ColorChangingButton(self, text="other", command=lambda: self.set_toggle_state("other"), grid_options={'row': 0, 'column': 3})
+        self.button_other = ColorChangingButton(self, text="?", command=lambda: self.set_toggle_state("other"), grid_options={'row': 0, 'column': 3})
 
+        self.edit_field = tk.Entry(self, width=6)
+        self.whitespace = tk.Label(self, width=6)  # Placeholder for whitespace
+        self.whitespace.grid(row=0, column=4, padx=8)
 
-        # Edit field, initially hidden
-        self.edit_field = tk.Entry(self)
-        self.edit_field.grid(row=0, column=4)
-        self.edit_field.grid_remove()  # Hide initially
+        delete_button = tk.Button(self, text="x", command=self.delete, bg="red", fg="white", font=("Arial", 12), height=2, width=2)
+        delete_button.config(borderwidth=0, highlightthickness=0)
+        delete_button.grid(row=0, column=5, padx=8, pady=8)
 
-        # Delete button
-        delete_button = tk.Button(self, text="Delete", command=self.delete)
-        delete_button.grid(row=0, column=5)
+        self.set_initial_state(time)
 
     def set_toggle_state(self, state):
-        # Update the toggle state and button appearances
         self.toggle_state = state
         for button in [self.button1, self.button2, self.button_other]:
             button.deactivate_button()
@@ -112,14 +112,54 @@ class TourItem(tk.Frame):
         if state == "1":
             self.button1.activate_button()
             self.edit_field.grid_remove()
+            self.whitespace.grid()
         elif state == "2":
             self.button2.activate_button()
             self.edit_field.grid_remove()
+            self.whitespace.grid()
         elif state == "other":
             self.button_other.activate_button()
-            self.edit_field.grid()
+            self.whitespace.grid_remove()
+            self.edit_field.grid(row=0, column=4,padx=7)
+
+    def set_initial_state(self, time):
+        if time in ["1", "2"]:
+            self.set_toggle_state(time)
+        else:
+            self.set_toggle_state("other")
+            self.edit_field.insert(0, time)
+
+    def get_time(self):
+        return self.stored_time if self.toggle_state == "other" else self.toggle_state
 
     def delete(self):
-        # Communicate back to TageKonfigurieren that this item is deleted
         self.delete_callback(self.number)
         self.destroy()
+
+
+class TourItemCreator(tk.Frame):
+    """
+    A widget for creating new TourItem instances.
+    """
+    def __init__(self, parent, add_callback):
+        super().__init__(parent)
+        self.add_callback = add_callback
+
+        # Entry for setting the Tour number
+        self.number_entry = tk.Entry(self)
+        self.number_entry.pack(side="left", padx=5)
+
+        # Add button to create a new TourItem
+        self.add_button = tk.Button(self, text="Add", command=self.add_tour)
+        self.add_button.pack(side="left", padx=5)
+
+        # Delete button to remove this creator widget
+        self.delete_button = tk.Button(self, text="Delete", command=self.destroy)
+        self.delete_button.pack(side="left", padx=5)
+
+    def add_tour(self):
+        # Retrieve number from entry and call the add_callback function
+        number = self.number_entry.get()
+        if number:
+            self.add_callback(number)
+            self.number_entry.delete(0, tk.END)  # Clear the entry after adding

@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import timedelta
 from datetime import datetime
-from atoms import ColorChangingButton, TourItem
+from atoms import ColorChangingButton, TourItem, TourItemCreator
 from data_manager import TimeManager
 from data_manager import DailyHoursManager
 from data_manager import get_next_working_day, format_date_with_weekday
@@ -370,5 +370,20 @@ class TageKonfigurieren:
         if current_count > 0:
             self.tour_counts[day].set(current_count - 1)
             self.populate_tour_list(day)
+            
+            
+    def create_tour_creator(self, day):
+        """
+        Creates a TourItemCreator widget for a specified day.
+        """
+        creator_frame = TourItemCreator(self.tour_counts[day].list_frame, lambda number: self.add_tour(day, number))
+        creator_frame.pack(pady=5)
+
+    def add_tour(self, day, number):
+        """
+        Adds a new TourItem to the specified day's list.
+        """
+        TourItem(self.tour_counts[day].list_frame, number, "00:00", lambda number=number: self.remove_tour(day, number))
+        self.update_tour_count(day, 1)  # Increment the count
 
 
