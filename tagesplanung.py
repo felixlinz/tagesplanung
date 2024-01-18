@@ -1,17 +1,21 @@
 import tkinter as tk
+from atoms import TourItem
 from widgets import SideMenu
 from widgets import TimeEntrySection
 from widgets import DailyWorkingTimesSection
 from widgets import CombinedTimeSection
 from widgets import WorkingDaysSection
+from widgets import TageKonfigurieren
 from data_manager import TimeManager
 
 
 def main():
     # Example usage
     root = tk.Tk()
-    working_days_section = WorkingDaysSection(root)
-    root.mainloop()
+
+    # Create an instance of TourItem for testing
+    test_tour_item = TourItem(root, number=1, time="08:00", delete_callback=lambda number: print(f"Deleted Tour {number}"))
+    test_tour_item.pack()
  
 # def filter_df_by_selected_tours(df, selected_tours):
 #     # Extract just the tour numbers from the selected tours ignoring the Welle

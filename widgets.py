@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import timedelta
 from datetime import datetime
-from atoms import ColorChangingButton
+from atoms import ColorChangingButton, TourItem
 from data_manager import TimeManager
 from data_manager import DailyHoursManager
 from data_manager import get_next_working_day, format_date_with_weekday
@@ -263,6 +263,7 @@ class DailyWorkingTimesSection:
         minutes = remainder // 60
         return f"{hours}:{minutes:02d}"
 
+
 class WorkingDaysSection:
     def __init__(self, master):
         self.master = master
@@ -287,4 +288,87 @@ class WorkingDaysSection:
             formatted_day = format_date_with_weekday(current_day)
             day_frame = tk.Frame(self.notebook)
             self.notebook.add(day_frame, text=formatted_day)
+
+
+class TageKonfigurieren:
+    """
+    load starting times from datamanger (perhaps use variables for this later to prevent multiple loading)
+    needs datamanger to save the data for each day
+    needs to load from datamanger to set up the default
+    
+    addings new tour item method
+    """
+    def __init__(self, master):
+        self.master = master
+        self.tour_counts = {}  # Dictionary to keep track of tour counts for each day
+
+        # Create Notebook widget
+        self.notebook = ttk.Notebook(master)
+        self.notebook.pack(fill="both", expand=True)
+
+        # Days of the week in German (excluding Sunday)
+        days = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
+
+        # Create a tab for each day
+        for day in days:
+            self.create_day_tab(day)
+
+    def create_day_tab(self, day):
+        day_frame = tk.Frame(self.notebook)
+        self.notebook.add(day_frame, text=day)
+
+        # Counter frame at the top-right corner
+        counter_frame = tk.Frame(day_frame)
+        counter_frame.pack(side="top", anchor="ne")
+
+        # Default tour count is 20
+        self.tour_counts[day] = tk.IntVar(value=20)
+
+        tk.Label(counter_frame, text="Anzahl Touren:").pack(side="left")
+        tk.Label(counter_frame, textvariable=self.tour_counts[day]).pack(side="left")
+
+        increment_button = tk.Button(counter_frame, text="+", command=lambda: self.update_tour_count(day, 1))
+        increment_button.pack(side="left")
+
+        decrement_button = tk.Button(counter_frame, text="-", command=lambda: self.update_tour_count(day, -1))
+        decrement_button.pack(side="left")
+
+        # List frame for tours
+        list_frame = tk.Frame(day_frame)
+        list_frame.pack(fill="both", expand=True)
+
+        # Store the list frame for later updates
+        self.tour_counts[day].list_frame = list_frame
+
+        # Initially populate the list with 20 tour items
+        self.populate_tour_list(day)
+
+    def update_tour_count(self, day, change):
+        # Update the count
+        current_count = self.tour_counts[day].get()
+        new_count = max(0, current_count + change)
+        self.tour_counts[day].set(new_count)
+
+        # Update the list of tours
+        self.populate_tour_list(day)
+
+    def populate_tour_list(self, day):
+        # Clear the existing list
+        list_frame = self.tour_counts[day].list_frame
+        for widget in list_frame.winfo_children():
+            widget.destroy()
+
+        # Create new tour items with placeholder time and a delete callback
+        for i in range(self.tour_counts[day].get()):
+            TourItem(list_frame, i + 1, "00:00", lambda number=i+1: self.remove_tour(day, number))
+
+    def remove_tour(self, day, number):
+        # Function to handle removal of a tour item
+        print(f"Tour {number} removed from {day}")
+        # Update the tour count
+        current_count = self.tour_counts[day].get()
+        if current_count > 0:
+            self.tour_counts[day].set(current_count - 1)
+            self.populate_tour_list(day)
+
 

@@ -190,7 +190,7 @@ def learn_data_from_excel(desired_date: datetime.date) -> pd.DataFrame:
         raise ValueError(f"Date {desired_date} not found in the Excel file.")
     
     # Extract values from B20:C78 and the date column.
-    extracted_data = df.iloc[19:78, [1, 2, matching_col_idx]]
+    extracted_data = df.iloc[19:132, [1, 2, matching_col_idx]]
 
     # Rename the columns
     extracted_data.columns = ['Name', 'Stammtour', 'Einsatz']
@@ -232,23 +232,37 @@ def format_date_with_weekday(date_obj):
 
 
 def sort_workers(df):
-    # Convert 'Stammtour' to numeric, replacing non-numeric values with NaN
-    df['Stammtour'] = pd.to_numeric(df['Stammtour'], errors='coerce')
+    # Filter rows where 'Stammtour' is numeric and 'Einsatz' equals the integer 1
+    df_numeric_stammtour = df[pd.to_numeric(df['Stammtour'], errors='coerce').notna()]
+    sorted_df_numeric = df_numeric_stammtour[df_numeric_stammtour['Einsatz'] == 1]
+    sorted_df_numeric = sorted_df_numeric.sort_values(by='Stammtour').reset_index(drop=True)
 
-    # Convert the series to a nullable integer type
-    df['Stammtour'] = df['Stammtour'].astype('Int64')
+    # Filter rows where 'Stammtour' equals 's' and 'Einsatz' equals 1
+    sorted_df_s = df[(df['Stammtour'] == 's') & (df['Einsatz'] == 1)]
 
-    # Filter rows where 'Stammtour' is a number and 'Einsatz' equals the integer 1
-    filtered_df_numeric = df[(df['Stammtour'].notna()) & (df['Einsatz'] == 1)]
+    # Filter rows for each specific 'Einsatz' condition
+    sorted_df_fd = df[df['Einsatz'] == 'FD']
+    sorted_df_sd = df[df['Einsatz'] == 'SD']
+    sorted_df_id = df[df['Einsatz'] == 'ID']
+    sorted_df_fa = df[df['Einsatz'] == 'FA']
+    sorted_df_e = df[df['Einsatz'] == 'E']
 
-    # Sort the filtered DataFrame by 'Stammtour' in ascending order
-    sorted_df_numeric = filtered_df_numeric.sort_values(by='Stammtour').reset_index(drop=True)
+    # DataFrame for 'Einsatz' equals '1' and 'Stammtour' is neither a number nor 's'
+    sorted_df_remaining_1 = df[(df['Einsatz'] == 1) & (df['Stammtour'] != 's') & 
+                               (pd.to_numeric(df['Stammtour'], errors='coerce').isna())]
+    
+    dataframes = {
+    "Stammfahrer": sorted_df_numeric,
+    "Springer": sorted_df_s,
+    "Frühdienst": sorted_df_fd,
+    "Spätdienst": sorted_df_sd,
+    "Innendienst": sorted_df_id,
+    "Firmen": sorted_df_fa,
+    "Einweisung": sorted_df_e,
+    "Abrufer": sorted_df_remaining_1
+    }
 
-    # Filter rows where 'Stammtour' equals 's' and 'Einsatz' equals '1'
-    filtered_df_s = df[(df['Stammtour'].astype(str) == 's') & (df['Einsatz'] == 1)]
-
-    # Return both DataFrames
-    return sorted_df_numeric, filtered_df_s
+    return dataframes
 
 if __name__=="__name__":
     main()
