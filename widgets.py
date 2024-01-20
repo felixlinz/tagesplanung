@@ -340,8 +340,16 @@ class TageKonfigurieren:
         # Store the list frame for later updates
         self.tour_counts[day].list_frame = list_frame
 
+        # Create TourItemCreator
+        self.create_tour_creator(day)
+
         # Initially populate the list with 20 tour items
         self.populate_tour_list(day)
+
+    def create_tour_creator(self, day):
+        # Assuming self.tour_counts[day].list_frame is the intended parent for TourItemCreator
+        creator_frame = TourItemCreator(self.tour_counts[day].list_frame, lambda number: self.add_tour(day, number))
+        creator_frame.pack(pady=5)
 
     def update_tour_count(self, day, change):
         # Update the count
