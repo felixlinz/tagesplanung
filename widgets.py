@@ -367,8 +367,9 @@ class TageKonfigurieren:
 
         for i in range(self.tour_counts[day].get()):
             number = f"{i+1:03d}"
-            TourItem(list_frame, number, "00:00", lambda number=number: self.remove_tour(day, number)).pack()
-
+            TourItem(list_frame, number, "00:00", lambda number=number: self.remove_tour(day, number)).pack(fill=tk.X)
+            
+        
     def remove_tour(self, day, number):
         # Function to handle removal of a tour item
         print(f"Tour {number} removed from {day}")
