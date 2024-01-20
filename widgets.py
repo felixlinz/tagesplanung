@@ -361,14 +361,13 @@ class TageKonfigurieren:
         self.populate_tour_list(day)
 
     def populate_tour_list(self, day):
-        # Clear the existing list
         list_frame = self.tour_counts[day].list_frame
         for widget in list_frame.winfo_children():
             widget.destroy()
 
-        # Create new tour items with placeholder time and a delete callback
         for i in range(self.tour_counts[day].get()):
-            TourItem(list_frame, i + 1, "00:00", lambda number=i+1: self.remove_tour(day, number))
+            number = f"{i+1:03d}"
+            TourItem(list_frame, number, "00:00", lambda number=number: self.remove_tour(day, number)).pack()
 
     def remove_tour(self, day, number):
         # Function to handle removal of a tour item
