@@ -292,11 +292,20 @@ class WorkingDaysSection:
 
 class TageKonfigurieren:
     """
-    load starting times from datamanger (perhaps use variables for this later to prevent multiple loading)
-    needs datamanger to save the data for each day
-    needs to load from datamanger to set up the default
-    
-    addings new tour item method
+    Manages the configuration of tours for different days of the week.
+
+    Attributes:
+    - master (Tk widget): The parent Tk widget.
+    - tour_counts (dict): A dictionary to keep track of tour counts for each day.
+    - notebook (ttk.Notebook): A notebook widget to create tabs for each day.
+
+    Methods:
+    - create_day_tab: Creates a tab for a specific day with tour items and controls.
+    - update_tour_count: Updates the count of tours for a given day.
+    - populate_tour_list: Populates the list of tours for a given day.
+    - remove_tour: Handles the removal of a tour item.
+    - create_tour_creator: Creates a widget for adding new tour items.
+    - add_tour: Adds a new TourItem to a specific day's list.
     """
     def __init__(self, master):
         self.master = master

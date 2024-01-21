@@ -61,49 +61,68 @@ def deactivate_other_buttons(except_button):
             button.deactivate_button()
             
             
+            
 class ToggleButton(tk.Frame):
     """
-    todo: 
-    fix this shit
+    A custom Tkinter Frame widget that groups together a set of toggle buttons.
+
+    Attributes:
+    - callback (function): A callback function invoked when a toggle button is pressed.
+    - buttons (list): A list of ColorChangingButton instances.
+    - current_state (str): The label of the currently active button.
+
+    Methods:
+    - set_active_button: Activates a button at the given index and deactivates others.
+    - get_active_button_label: Returns the label of the currently active button.
     """
-    def __init__(self, master, toggle_callback=None):
+    def __init__(self, master, callback=None):
         super().__init__(master)
-        self.toggle_callback = toggle_callback
-        self.current_state = None
+        self.labels = ["1", "2", "?"]
+        self.callback = callback
+        self.buttons = []
 
-        # Create the three buttons
-        self.button1 = ColorChangingButton(self, text="1", command=lambda: self.set_toggle_state("1"))
-        self.button1.pack(side='left')
+        for idx, label in enumerate(self.labels):
+            button = ColorChangingButton(self, text=label, command=lambda idx=idx: self.set_active_button(idx), grid_options={'row': 0, 'column': idx})
+            self.buttons.append(button)
 
-        self.button2 = ColorChangingButton(self, text="2", command=lambda: self.set_toggle_state("2"))
-        self.button2.pack(side='left')
+        # Set the first button as active by default
+        self.set_active_button(0)
 
-        self.button_other = ColorChangingButton(self, text="other", command=lambda: self.set_toggle_state("other"))
-        self.button_other.pack(side='left')
-
-    def set_toggle_state(self, state):
-        # Update the active state
-        self.current_state = state
-        self.update_button_states()
-
-        # Call the callback function if it's set
-        if self.toggle_callback:
-            self.toggle_callback(state)
-
-    def update_button_states(self):
-        # Activate the selected button and deactivate others
-        for button, state in [(self.button1, "1"), (self.button2, "2"), (self.button_other, "other")]:
-            if self.current_state == state:
+    def set_active_button(self, active_index):
+        # Update the active button and deactivate others
+        for idx, button in enumerate(self.buttons):
+            if idx == active_index:
                 button.activate_button()
+                if self.callback:
+                    self.callback(button.label['text'])
             else:
                 button.deactivate_button()
-
-    def get_toggle_state(self):
-        return self.current_state            
+                
+    
             
             
 
 class TourItem(tk.Frame):
+    """
+    A custom Tkinter Frame widget representing a tour item.
+
+    Attributes:
+    - number (str): The number of the tour.
+    - stored_time (str): Time associated with the tour, used to set the initial toggle state.
+    - delete_callback (function): A callback function to handle the deletion of the tour item.
+    - toggle_state (str): The current state of the toggle buttons.
+    - label (tk.Label): A label displaying the tour number.
+    - edit_field (tk.Entry): An entry field for input, visible when 'other' is selected.
+    - whitespace (tk.Label): A label acting as a placeholder for layout consistency.
+    - toggle_button (ToggleButton): A set of toggle buttons for selecting tour types.
+    - delete_button (tk.Button): A button to delete the tour item.
+
+    Methods:
+    - set_toggle_state: Sets the state of the toggle buttons and updates the UI accordingly.
+    - set_initial_state: Sets the initial state of the toggle buttons based on provided time.
+    - get_time: Returns the stored time or the current state of the toggle buttons.
+    - delete: Deletes the tour item and performs callback.
+    """
     def __init__(self, master, number, time, delete_callback):
         super().__init__(master, bg="white")
         self.number = number
@@ -113,69 +132,57 @@ class TourItem(tk.Frame):
 
         # Layout configuration
         self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=1)
-        self.columnconfigure(2, weight=1)
-        self.columnconfigure(3, weight=1)
-        self.columnconfigure(4, weight=1)
+        self.columnconfigure(1, weight=3)  # Adjust weight for toggle button
 
         # Tour number label
         self.label = tk.Label(self, text=f"{number}", font=("Arial", 12, "bold"))
         self.label.grid(row=0, column=0, sticky="w", padx=16)
 
-        # Toggle buttons
-        self.button1 = ColorChangingButton(self, text="1", command=lambda: self.set_toggle_state("1"), grid_options={'row': 0, 'column': 1})
-        self.button2 = ColorChangingButton(self, text="2", command=lambda: self.set_toggle_state("2"), grid_options={'row': 0, 'column': 2})
-        self.button_other = ColorChangingButton(self, text="?", command=lambda: self.set_toggle_state("other"), grid_options={'row': 0, 'column': 3})
-
         # Edit field and whitespace
         self.edit_field = tk.Entry(self, width=6)
-        self.whitespace = tk.Label(self, width=6)
-        self.whitespace.grid(row=0, column=4, padx=8)
+        self.whitespace = tk.Label(self, width=1)
+        self.whitespace.grid(row=0, column=2, padx=8)
+        
+        # ToggleButton
+        self.toggle_button = ToggleButton(self, callback=self.set_toggle_state)
+        self.toggle_button.grid(row=0, column=1, columnspan=3, sticky="ew")
 
         # Delete button
         delete_button = tk.Button(self, text="x", command=self.delete, bg="red", fg="white", font=("Arial", 12), height=2, width=2)
         delete_button.config(borderwidth=0, highlightthickness=0)
-        delete_button.grid(row=0, column=5, padx=8, pady=8)
+        delete_button.grid(row=0, column=3, padx=8, pady=8)
 
         # Set initial toggle state
         self.set_initial_state(time)
 
+    def set_initial_state(self, time):
+        # Set the initial toggle state based on the time
+        if time in ["1", "2"]:
+            self.toggle_button.set_active_button(int(time) - 1)  # 0 for "1", 1 for "2"
+        else:
+            self.toggle_button.set_active_button(2)  # "other" button
+            self.edit_field.insert(0, time)
+            self.edit_field.grid(row=0, column=2, padx=7)
+            
+            
     def set_toggle_state(self, state):
         self.toggle_state = state
-        deactivate_other_buttons(self)
-
-        if state == "1":
-            self.button1.activate_button()
-            self.edit_field.grid_remove()
-            self.whitespace.grid()
-        elif state == "2":
-            self.button2.activate_button()
-            self.edit_field.grid_remove()
-            self.whitespace.grid()
-        elif state == "other":
-            self.button_other.activate_button()
-            self.whitespace.grid_remove()
+        # Handle toggle state changes here
+        # For example, show/hide the edit field based on the state
+        if state == "?":
             self.edit_field.grid(row=0, column=4, padx=7)
-
-    def set_initial_state(self, time):
-        if time in ["1", "2"]:
-            self.set_toggle_state(time)
         else:
-            self.set_toggle_state("other")
-            self.edit_field.insert(0, time)
+            self.edit_field.grid_remove()
 
     def get_time(self):
-        return self.stored_time if self.toggle_state == "other" else self.toggle_state
+        # Return the stored time if "other" is selected, else return the button label
+        active_label = self.toggle_button.get_active_button_label()
+        return self.stored_time if active_label == "?" else active_label
 
     def delete(self):
         self.delete_callback(self.number)
         self.destroy()
 
-# Helper function to deactivate other buttons
-def deactivate_other_buttons(selected_tour_item):
-    for button in [selected_tour_item.button1, selected_tour_item.button2, selected_tour_item.button_other]:
-        button.deactivate_button()
- 
 
 
 class TourItemCreator(tk.Frame):
