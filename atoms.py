@@ -1,10 +1,12 @@
 import tkinter as tk
 
+
 class ColorChangingButton:
-    def __init__(self, master, text, command=None, grid_options=None):
+    def __init__(self, master, text, command=None, grid_options=None, effort=None):
         self.master = master
         self.command = command
         self.active = False
+        self.effort = effort
 
         # Create frame and label
         self.frame = tk.Frame(master, bg="white", bd=1)
@@ -54,6 +56,70 @@ class ColorChangingButton:
         self.active = False
         self.frame.config(bg="light blue")
         self.label.config(bg="light blue", fg="black")
+        
+        
+class ColorChangingButton2:
+    def __init__(self, master, text, grid_options=None, active_color="gray72", inactive_color="gray85", command=None):
+        self.master = master
+        self.other_buttons = []
+        self.active = False
+        self.active_color = active_color
+        self.font_color = "black"
+        self.font = ("Myriad Pro","12")
+        self.inactive_color = inactive_color
+        self.text=text
+        self.command=None
+
+        # Create frame with a specified width (96 px) and height (adjusting for top and bottom padding)
+        self.frame = tk.Frame(master, bg=self.inactive_color, bd=1, width=196, height=36)  # Height is an estimate; adjust as needed
+        self.frame.pack_propagate(False)  # Prevent the frame from resizing to fit the label
+
+        # Create label with left padding of 16px and align it left; add 4px padding to the top and bottom
+        self.label = tk.Label(self.frame, font=self.font, text=text, bg=self.inactive_color, fg="black", anchor="w")
+        self.label.pack(fill="both", expand=True, padx=(32, 0), pady=(8, 8))
+        
+        # Use grid manager if grid options are provided, else default to pack
+        if grid_options:
+            self.frame.grid(**grid_options)
+        else:
+            self.frame.pack(fill="x")
+
+        # Enable the frame to take focus
+        self.frame.focus_set()
+
+        # Bind events to both frame and label
+        self.bind_widgets("<Button-1>", self.on_click)
+        
+    def add_other_buttons(self, neighbours):
+        for neighbor in neighbours:
+            if neighbor != self:
+                self.other_buttons.append(neighbor)
+
+    def bind_widgets(self, event, handler):
+        self.frame.bind(event, handler)
+        self.label.bind(event, handler)
+
+
+    def on_click(self, event):
+        self.activate_button()
+        if self.command:
+            self.command()
+
+    def activate_button(self):
+        self.active = True
+        self.deactivate_other_buttons()
+        self.frame.config(bg=self.active_color)
+        self.label.config(bg=self.active_color, fg=self.font_color)
+        
+
+    def deactivate_button(self):
+        self.active = False
+        self.frame.config(bg=self.inactive_color)
+        self.label.config(bg=self.inactive_color, fg="black")
+        
+    def deactivate_other_buttons(self):
+        for button in self.other_buttons:
+            button.deactivate_button()
 
 def deactivate_other_buttons(except_button):
     for button in buttons:
@@ -80,10 +146,12 @@ class ToggleButton(tk.Frame):
         self.labels = ["1", "2", "?"]
         self.callback = callback
         self.buttons = []
+        self.configure(bg='white') 
 
         for idx, label in enumerate(self.labels):
             button = ColorChangingButton(self, text=label, command=lambda idx=idx: self.set_active_button(idx), grid_options={'row': 0, 'column': idx})
             self.buttons.append(button)
+            
 
         # Set the first button as active by default
         self.set_active_button(0)
@@ -140,7 +208,7 @@ class TourItem(tk.Frame):
 
         # Edit field and whitespace
         self.edit_field = tk.Entry(self, width=6)
-        self.whitespace = tk.Label(self, width=1)
+        self.whitespace = tk.Label(self, width=1, bg="white")
         self.whitespace.grid(row=0, column=2, padx=8)
         
         # ToggleButton
