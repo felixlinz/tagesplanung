@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import timedelta
 from datetime import datetime
-from atoms import ColorChangingButton, TourItem, TourItemCreator
+from atoms import ColorChangingButton, TourItem, TourItemCreator, ColorChangingButton2
 from data_manager import TimeManager
 from data_manager import DailyHoursManager
 from data_manager import get_next_working_day, format_date_with_weekday
@@ -23,15 +23,14 @@ class SideMenu:
         self.add_button("Tagesplanung", self.open_tagesplanung)
         self.add_button("Zeiten", self.open_zeiten)
         self.add_button("Touren", self.open_touren)
+        
+        for button in self.buttons:
+            button.add_other_buttons(self.buttons)
 
     def add_button(self, text, command):
-        button = ColorChangingButton(self.frame, text, command)
+        button = ColorChangingButton2(self.frame, text, command=command)
         self.buttons.append(button)
 
-    def deactivate_other_buttons(self, except_button):
-        for button in self.buttons:
-            if button != except_button:
-                button.deactivate_button()
 
     # Example functions for menu items
     def open_tagesplanung(self):
