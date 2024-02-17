@@ -121,10 +121,7 @@ class ColorChangingButton2:
         for button in self.other_buttons:
             button.deactivate_button()
 
-def deactivate_other_buttons(except_button):
-    for button in buttons:
-        if button != except_button:
-            button.deactivate_button()
+
             
             
             

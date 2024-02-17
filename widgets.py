@@ -26,6 +26,9 @@ class SideMenu:
         
         for button in self.buttons:
             button.add_other_buttons(self.buttons)
+            
+        self.buttons[0].activate_button()
+        self.buttons[0].command()
 
     def add_button(self, text, command):
         button = ColorChangingButton2(self.frame, text, command=command)
@@ -34,20 +37,18 @@ class SideMenu:
 
     # Example functions for menu items
     def open_tagesplanung(self):
-        self.deactivate_other_buttons(self.buttons[0])
-        print("Tagesplanung selected")
+        # should tell master to display NextDaysPlan
 
     def open_zeiten(self):
-        self.deactivate_other_buttons(self.buttons[1])
-        print("Zeiten selected")
+        # should tell master to display KombinierteZeitKonfiguration
+
 
     def open_touren(self):
-        self.deactivate_other_buttons(self.buttons[2])
-        print("Touren selected")
+        # should tell master to display GeneralDaysConfiguration
 
 
 
-class CombinedTimeSection:
+class KombinierteZeitKonfiguration:
     def __init__(self, master, start_times):
         self.master = master
 
@@ -65,11 +66,11 @@ class CombinedTimeSection:
         self.notebook.pack(fill="both", expand=True)
 
         # Add the DailyWorkingTimesSection and TimeEntrySection as tabs       
-        self.time_entry_section = TimeEntrySection(self.notebook)
+        self.time_entry_section = StartzeitKonfiguration(self.notebook)
         self.notebook.add(self.time_entry_section.frame, text='Beginn')
 
 
-        self.daily_working_times_section = DailyWorkingTimesSection(self.notebook, start_times)
+        self.daily_working_times_section = TagesRegelzeitKonfigurtion(self.notebook, start_times)
         self.notebook.add(self.daily_working_times_section.frame, text='Arbeitszeiten')
 
 
@@ -86,7 +87,7 @@ class CombinedTimeSection:
 
 
 
-class TimeEntrySection:
+class StartzeitKonfiguration:
     def __init__(self, master):
         self.master = master
 
@@ -133,7 +134,7 @@ class TimeEntrySection:
         print("Times saved!")  # Optional: Confirmation message
 
 
-class DailyWorkingTimesSection:
+class TagesRegelzeitKonfigurtion:
     def __init__(self, master, start_times):
         self.master = master
         self.start_times = start_times
@@ -263,7 +264,7 @@ class DailyWorkingTimesSection:
         return f"{hours}:{minutes:02d}"
 
 
-class WorkingDaysSection:
+class NextDaysPlan:
     def __init__(self, master):
         self.master = master
 
@@ -289,7 +290,7 @@ class WorkingDaysSection:
             self.notebook.add(day_frame, text=formatted_day)
 
 
-class TageKonfigurieren:
+class GeneralDaysConfiguration:
     """
     Manages the configuration of tours for different days of the week.
 
