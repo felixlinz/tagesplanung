@@ -2,11 +2,13 @@ import tkinter as tk
 
 
 class ColorChangingButton:
-    def __init__(self, master, text, command=None, grid_options=None, effort=None):
+    def __init__(self, master, text, active_color="gray72", inactive_color="gray85", command=None, grid_options=None, effort=None):
         self.master = master
         self.command = command
         self.active = False
         self.effort = effort
+        self.active_color = active_color
+        self.inactive_color = inactive_color
 
         # Create frame and label
         self.frame = tk.Frame(master, bg="white", bd=1)
@@ -24,23 +26,12 @@ class ColorChangingButton:
         self.frame.focus_set()
 
         # Bind events to both frame and label
-        self.bind_widgets("<Enter>", self.on_enter)
-        self.bind_widgets("<Leave>", self.on_leave)
         self.bind_widgets("<Button-1>", self.on_click)
 
     def bind_widgets(self, event, handler):
         self.frame.bind(event, handler)
         self.label.bind(event, handler)
 
-    def on_enter(self, event):
-        if not self.active:
-            self.frame.config(bg="light blue")
-            self.label.config(bg="light blue")
-
-    def on_leave(self, event):
-        if not self.active:
-            self.frame.config(bg="light grey")
-            self.label.config(bg="light grey")
 
     def on_click(self, event):
         self.activate_button()
@@ -49,13 +40,13 @@ class ColorChangingButton:
 
     def activate_button(self):
         self.active = True
-        self.frame.config(bg="#007aff")
-        self.label.config(bg="#007aff", fg="white")
+        self.frame.config(bg=self.active_color)
+        self.label.config(bg=self.active_color, fg="black")
 
     def deactivate_button(self):
         self.active = False
-        self.frame.config(bg="light blue")
-        self.label.config(bg="light blue", fg="black")
+        self.frame.config(bg=self.inactive_color)
+        self.label.config(bg=self.inactive_color, fg="black")
         
         
 class ColorChangingButton2:
@@ -68,10 +59,10 @@ class ColorChangingButton2:
         self.font = ("Myriad Pro","12")
         self.inactive_color = inactive_color
         self.text=text
-        self.command=None
+        self.command=command
 
         # Create frame with a specified width (96 px) and height (adjusting for top and bottom padding)
-        self.frame = tk.Frame(master, bg=self.inactive_color, bd=1, width=196, height=36)  # Height is an estimate; adjust as needed
+        self.frame = tk.Frame(self.master.frame, bg=self.inactive_color, bd=1, width=196, height=36)  # Height is an estimate; adjust as needed
         self.frame.pack_propagate(False)  # Prevent the frame from resizing to fit the label
 
         # Create label with left padding of 16px and align it left; add 4px padding to the top and bottom
@@ -126,24 +117,13 @@ class ColorChangingButton2:
             
             
 class ToggleButton(tk.Frame):
-    """
-    A custom Tkinter Frame widget that groups together a set of toggle buttons.
-
-    Attributes:
-    - callback (function): A callback function invoked when a toggle button is pressed.
-    - buttons (list): A list of ColorChangingButton instances.
-    - current_state (str): The label of the currently active button.
-
-    Methods:
-    - set_active_button: Activates a button at the given index and deactivates others.
-    - get_active_button_label: Returns the label of the currently active button.
-    """
-    def __init__(self, master, callback=None):
+    def __init__(self, master, labels, command=None):
         super().__init__(master)
-        self.labels = ["1", "2", "?"]
-        self.callback = callback
+        self.labels = labels
+        self.command = command
         self.buttons = []
         self.configure(bg='white') 
+        self.state = 0
 
         for idx, label in enumerate(self.labels):
             button = ColorChangingButton(self, text=label, command=lambda idx=idx: self.set_active_button(idx), grid_options={'row': 0, 'column': idx})
@@ -158,36 +138,18 @@ class ToggleButton(tk.Frame):
         for idx, button in enumerate(self.buttons):
             if idx == active_index:
                 button.activate_button()
-                if self.callback:
-                    self.callback(button.label['text'])
+                if self.command:
+                    self.command(button.label["text"])
+                self.state = idx                
             else:
                 button.deactivate_button()
                 
+
     
             
             
 
 class TourItem(tk.Frame):
-    """
-    A custom Tkinter Frame widget representing a tour item.
-
-    Attributes:
-    - number (str): The number of the tour.
-    - stored_time (str): Time associated with the tour, used to set the initial toggle state.
-    - delete_callback (function): A callback function to handle the deletion of the tour item.
-    - toggle_state (str): The current state of the toggle buttons.
-    - label (tk.Label): A label displaying the tour number.
-    - edit_field (tk.Entry): An entry field for input, visible when 'other' is selected.
-    - whitespace (tk.Label): A label acting as a placeholder for layout consistency.
-    - toggle_button (ToggleButton): A set of toggle buttons for selecting tour types.
-    - delete_button (tk.Button): A button to delete the tour item.
-
-    Methods:
-    - set_toggle_state: Sets the state of the toggle buttons and updates the UI accordingly.
-    - set_initial_state: Sets the initial state of the toggle buttons based on provided time.
-    - get_time: Returns the stored time or the current state of the toggle buttons.
-    - delete: Deletes the tour item and performs callback.
-    """
     def __init__(self, master, number, time, delete_callback):
         super().__init__(master, bg="white")
         self.number = number
@@ -209,7 +171,7 @@ class TourItem(tk.Frame):
         self.whitespace.grid(row=0, column=2, padx=8)
         
         # ToggleButton
-        self.toggle_button = ToggleButton(self, callback=self.set_toggle_state)
+        self.toggle_button = ToggleButton(self, labels=["1.","2.","3."], command=self.set_toggle_state)
         self.toggle_button.grid(row=0, column=1, columnspan=3, sticky="ew")
 
         # Delete button
@@ -245,7 +207,7 @@ class TourItem(tk.Frame):
         return self.stored_time if active_label == "?" else active_label
 
     def delete(self):
-        self.delete_callback(self.number)
+        # self.delete_callback(self.number)
         self.destroy()
 
 

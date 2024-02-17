@@ -14,42 +14,50 @@ class SideMenu:
         self.master = master
         self.width = width
         self.buttons = []
+        self.frames = {}
+        self.current_frame = None
 
         # Create the side menu frame
         self.frame = tk.Frame(master, width=self.width)
-        self.frame.pack(side="left", fill="y", padx=(0, 10))
+        self.frame.pack(side="left", fill="y", padx=(8, 8))
+        
+        self.init_frames()
 
         # Add buttons
-        self.add_button("Tagesplanung", self.open_tagesplanung)
-        self.add_button("Zeiten", self.open_zeiten)
-        self.add_button("Touren", self.open_touren)
+        self.add_button("Tagesplanung", command=lambda: self.switch_frame(NextDaysPlan))
+        self.add_button("Zeiten", command=lambda: self.switch_frame(KombinierteZeitKonfiguration))
+        self.add_button("Touren", command=lambda: self.switch_frame(TourenKonfiguration))
+
         
         for button in self.buttons:
             button.add_other_buttons(self.buttons)
             
         self.buttons[0].activate_button()
-        self.buttons[0].command()
+        self.switch_frame(NextDaysPlan)
+        
+    def switch_frame(self, frame_class):
+        if self.current_frame is not None:
+            self.current_frame.frame.pack_forget()  # Hide the current frame
+
+        # Retrieve the frame instance from the dictionary
+        self.current_frame = self.frames[frame_class]
+        self.current_frame.frame.pack(fill="both", expand=True, pady=10)  # Show the frame
 
     def add_button(self, text, command):
-        button = ColorChangingButton2(self.frame, text, command=command)
+        button = ColorChangingButton2(self, text, command=command)
         self.buttons.append(button)
 
+    def init_frames(self):
+        # Create instances of all frames here and store them
+        self.frames[NextDaysPlan] = NextDaysPlan(self.master)
+        self.frames[KombinierteZeitKonfiguration] = KombinierteZeitKonfiguration(self.master)
+        self.frames[TourenKonfiguration] = TourenKonfiguration(self.master)
 
-    # Example functions for menu items
-    def open_tagesplanung(self):
-        # should tell master to display NextDaysPlan
-
-    def open_zeiten(self):
-        # should tell master to display KombinierteZeitKonfiguration
-
-
-    def open_touren(self):
-        # should tell master to display GeneralDaysConfiguration
 
 
 
 class KombinierteZeitKonfiguration:
-    def __init__(self, master, start_times):
+    def __init__(self, master):
         self.master = master
 
         # Configure the style for the notebook tabs
@@ -70,7 +78,7 @@ class KombinierteZeitKonfiguration:
         self.notebook.add(self.time_entry_section.frame, text='Beginn')
 
 
-        self.daily_working_times_section = TagesRegelzeitKonfigurtion(self.notebook, start_times)
+        self.daily_working_times_section = TagesRegelzeitKonfigurtion(self.notebook)
         self.notebook.add(self.daily_working_times_section.frame, text='Arbeitszeiten')
 
 
@@ -135,9 +143,8 @@ class StartzeitKonfiguration:
 
 
 class TagesRegelzeitKonfigurtion:
-    def __init__(self, master, start_times):
+    def __init__(self, master):
         self.master = master
-        self.start_times = start_times
         self.hours_manager = DailyHoursManager()
 
         # Create the frame for this section
@@ -290,7 +297,7 @@ class NextDaysPlan:
             self.notebook.add(day_frame, text=formatted_day)
 
 
-class GeneralDaysConfiguration:
+class TourenKonfiguration:
     """
     Manages the configuration of tours for different days of the week.
 
@@ -377,24 +384,32 @@ class GeneralDaysConfiguration:
         for i in range(self.tour_counts[day].get()):
             number = f"{i+1:03d}"
             TourItem(list_frame, number, "00:00", lambda number=number: self.remove_tour(day, number)).pack(fill=tk.X)
-            
+               
         
     def remove_tour(self, day, number):
-        # Function to handle removal of a tour item
-        print(f"Tour {number} removed from {day}")
-        # Update the tour count
-        current_count = self.tour_counts[day].get()
-        if current_count > 0:
-            self.tour_counts[day].set(current_count - 1)
-            self.populate_tour_list(day)
-            
-            
+        """
+        Removes a specific TourItem from the day's list.
+        """
+        # Assuming self.tour_items is a dictionary where each key is a day and
+        # the value is a list of TourItem instances.
+        if day in self.tour_items:
+            # Find the tour item with the specified number and remove it
+            for i, item in enumerate(self.tour_items[day]):
+                if item.number == number:
+                    item.destroy()  # Remove the item from the UI
+                    del self.tour_items[day][i]  # Remove the item from the list
+                    break  # Exit the loop once the item is found and removed
+
+            # Note: No need to decrement the Anzahl Touren counter here
+            # as we're directly managing the tour items.
+                
     def create_tour_creator(self, day):
         """
         Creates a TourItemCreator widget for a specified day.
         """
         creator_frame = TourItemCreator(self.tour_counts[day].list_frame, lambda number: self.add_tour(day, number))
         creator_frame.pack(pady=5)
+        
 
     def add_tour(self, day, number):
         """
