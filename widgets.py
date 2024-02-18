@@ -49,9 +49,10 @@ class SideMenu:
 
     def init_frames(self):
         # Create instances of all frames here and store them
+        self.frames[TourenKonfiguration] = TourenKonfiguration(self.master)        
         self.frames[NextDaysPlan] = NextDaysPlan(self.master)
-        self.frames[KombinierteZeitKonfiguration] = KombinierteZeitKonfiguration(self.master)
-        self.frames[TourenKonfiguration] = TourenKonfiguration(self.master)
+        self.frames[KombinierteZeitKonfiguration] = KombinierteZeitKonfiguration(self.master)#
+        # self.frames[TourenKonfiguration] = TourenKonfiguration(self.master)
 
 
 
@@ -299,24 +300,16 @@ class NextDaysPlan:
 
 class TourenKonfiguration:
     """
-    Manages the configuration of tours for different days of the week.
+    Manages the overall configuration of tours for different days of the week.
 
     Attributes:
     - master (Tk widget): The parent Tk widget.
-    - tour_counts (dict): A dictionary to keep track of tour counts for each day.
+    - day_configs (dict): A dictionary to keep track of DayConfig instances for each day.
     - notebook (ttk.Notebook): A notebook widget to create tabs for each day.
-
-    Methods:
-    - create_day_tab: Creates a tab for a specific day with tour items and controls.
-    - update_tour_count: Updates the count of tours for a given day.
-    - populate_tour_list: Populates the list of tours for a given day.
-    - remove_tour: Handles the removal of a tour item.
-    - create_tour_creator: Creates a widget for adding new tour items.
-    - add_tour: Adds a new TourItem to a specific day's list.
     """
     def __init__(self, master):
         self.master = master
-        self.tour_counts = {}  # Dictionary to keep track of tour counts for each day
+        self.day_configs = {}  # Dictionary to keep track of DayConfig instances for each day
 
         # Create Notebook widget
         self.notebook = ttk.Notebook(master)
@@ -325,97 +318,84 @@ class TourenKonfiguration:
         # Days of the week in German (excluding Sunday)
         days = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
 
-        # Create a tab for each day
+        # Initialize DayConfig for each day and create a tab
         for day in days:
-            self.create_day_tab(day)
+            day_frame = tk.Frame(self.notebook)
+            self.notebook.add(day_frame, text=day)
+            self.day_configs[day] = DayConfig(day_frame, day)
+            
+        
+class DayConfig:
+    def __init__(self, parent_frame, day):
+        self.parent_frame = parent_frame
+        self.day = day
+        self.touren_amount = 20
+        self.tk_touren_amount = tk.IntVar(value=self.touren_amount)
+        self.frame = self.initialize_frame()
+        self.touren = self.generate_tour_items()
+        self.frame.pack(fill="both", expand=True)
 
-    def create_day_tab(self, day):
-        day_frame = tk.Frame(self.notebook)
-        self.notebook.add(day_frame, text=day)
+    def initialize_frame(self):
+        frame = tk.Frame(self.parent_frame, width=600, height=400)
+        self.create_controls()
+        self.create_tour_display_area()
+        
+        return frame
 
-        # Counter frame at the top-right corner
-        counter_frame = tk.Frame(day_frame)
-        counter_frame.pack(side="top", anchor="ne")
-
-        # Default tour count is 20
-        self.tour_counts[day] = tk.IntVar(value=20)
-
-        tk.Label(counter_frame, text="Anzahl Touren:").pack(side="left")
-        tk.Label(counter_frame, textvariable=self.tour_counts[day]).pack(side="left")
-
-        increment_button = tk.Button(counter_frame, text="+", command=lambda: self.update_tour_count(day, 1))
+    def create_controls(self):
+        """
+        Creates increment and decrement buttons, and an edit field for touren_amount.
+        """
+        increment_button = tk.Button(self.frame, text="+", command=self.increment_touren)
         increment_button.pack(side="left")
 
-        decrement_button = tk.Button(counter_frame, text="-", command=lambda: self.update_tour_count(day, -1))
+        edit_field = tk.Entry(self.frame, textvariable=self.tk_touren_amount)
+        edit_field.pack(side="left")
+
+        decrement_button = tk.Button(self.frame, text="-", command=self.decrement_touren)
         decrement_button.pack(side="left")
 
-        # List frame for tours
-        list_frame = tk.Frame(day_frame)
-        list_frame.pack(fill="both", expand=True)
+    def create_tour_display_area(self):
+        # Create a scrollable area for tours
+        self.scrollable_frame = tk.Frame(self.frame)
+        self.scrollable_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Store the list frame for later updates
-        self.tour_counts[day].list_frame = list_frame
+        self.canvas = tk.Canvas(self.scrollable_frame)
+        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # Create TourItemCreator
-        self.create_tour_creator(day)
+        self.scrollbar = ttk.Scrollbar(self.scrollable_frame, orient="vertical", command=self.canvas.yview)
+        self.scrollbar.pack(side=tk.RIGHT, fill="y")
 
-        # Initially populate the list with 20 tour items
-        self.populate_tour_list(day)
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+        self.canvas.bind('<Configure>', lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
 
-    def create_tour_creator(self, day):
-        # Assuming self.tour_counts[day].list_frame is the intended parent for TourItemCreator
-        creator_frame = TourItemCreator(self.tour_counts[day].list_frame, lambda number: self.add_tour(day, number))
-        creator_frame.pack(pady=5)
+        self.tours_frame = tk.Frame(self.canvas)
+        self.canvas.create_window((0, 0), window=self.tours_frame, anchor="nw")
 
-    def update_tour_count(self, day, change):
-        # Update the count
-        current_count = self.tour_counts[day].get()
-        new_count = max(0, current_count + change)
-        self.tour_counts[day].set(new_count)
+    def increment_touren(self):
+        self.tk_touren_amount.set(self.tk_touren_amount.get() + 1)
+        self.refresh_tour_items()
 
-        # Update the list of tours
-        self.populate_tour_list(day)
+    def decrement_touren(self, number=None):
+        new_value = max(0, self.tk_touren_amount.get() - 1)
+        self.tk_touren_amount.set(new_value)
+        if number is not None:
+            self.touren = [tour for tour in self.touren if tour.number != number]
+        self.refresh_tour_items()
 
-    def populate_tour_list(self, day):
-        list_frame = self.tour_counts[day].list_frame
-        for widget in list_frame.winfo_children():
+    def generate_tour_items(self):
+        self.clear_tour_items()
+        for i in range(self.tk_touren_amount.get()):
+            TourItem(self.tours_frame, i+1, time="1.", delete_callback=self.decrement_touren)
+
+    def refresh_tour_items(self):
+        self.generate_tour_items()
+
+    def clear_tour_items(self):
+        for widget in self.tours_frame.winfo_children():
             widget.destroy()
 
-        for i in range(self.tour_counts[day].get()):
-            number = f"{i+1:03d}"
-            TourItem(list_frame, number, "00:00", lambda number=number: self.remove_tour(day, number)).pack(fill=tk.X)
-               
-        
-    def remove_tour(self, day, number):
-        """
-        Removes a specific TourItem from the day's list.
-        """
-        # Assuming self.tour_items is a dictionary where each key is a day and
-        # the value is a list of TourItem instances.
-        if day in self.tour_items:
-            # Find the tour item with the specified number and remove it
-            for i, item in enumerate(self.tour_items[day]):
-                if item.number == number:
-                    item.destroy()  # Remove the item from the UI
-                    del self.tour_items[day][i]  # Remove the item from the list
-                    break  # Exit the loop once the item is found and removed
-
-            # Note: No need to decrement the Anzahl Touren counter here
-            # as we're directly managing the tour items.
-                
-    def create_tour_creator(self, day):
-        """
-        Creates a TourItemCreator widget for a specified day.
-        """
-        creator_frame = TourItemCreator(self.tour_counts[day].list_frame, lambda number: self.add_tour(day, number))
-        creator_frame.pack(pady=5)
-        
-
-    def add_tour(self, day, number):
-        """
-        Adds a new TourItem to the specified day's list.
-        """
-        TourItem(self.tour_counts[day].list_frame, number, "00:00", lambda number=number: self.remove_tour(day, number))
-        self.update_tour_count(day, 1)  # Increment the count
-
-
+    def update_touren_amount_from_entry(self):
+        # This method can be called to update `touren_amount` based on the Entry widget, if needed
+        self.touren_amount = self.tk_touren_amount.get()
+        self.refresh_tour_items()
