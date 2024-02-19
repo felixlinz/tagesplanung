@@ -117,6 +117,7 @@ class ColorChangingButton2:
 
 class ColorChangingButton3:
     def __init__(self, master, label, active_color="gray72", inactive_color="gray85", command=None):
+
         self.frame = tk.Frame(master, width=32, height=32)
         self.active = False
         self.label = tk.Label(self.frame, text = label, font="Myriad")

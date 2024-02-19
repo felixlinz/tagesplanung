@@ -2,21 +2,25 @@ import tkinter as tk
 import ttkbootstrap as ttk
 
 
-root = ttk.Window(themename="superhero")
-root.title("Tagesplanung")
-root.geometry("440x1200")
+def rewrite():
+    string_var.set("AMK")
+    
 
+root = ttk.Window()
+root.geometry("400x400")
+root.title("playground")
 
+stringvar = tk.StringVar(value="StringVarValue")
+boolvar = tk.BooleanVar(value=False)
 
-subframe = ttk.Frame(root)
-entry = ttk.Entry(subframe)
-label = ttk.Label(subframe, text="label", font="Arial 64 bold")
-button = ttk.Button(subframe, text="Klick mich", )
-entry.pack()
-label.pack(padx=64, pady=64)
-subframe.pack(pady = 64)
+def bfunc():
+    print("a basic button")
 
-textfield = ttk.Text(root)
-textfield.pack(padx=64, pady=64)
+button = ttk.Button(root, command=bfunc, textvariable=stringvar)
+button.pack()
+
+check = ttk.Checkbutton(root, text="checkbox", variable=boolvar, command= lambda: print(boolvar.get()))
+check.pack()
+
 
 root.mainloop()
