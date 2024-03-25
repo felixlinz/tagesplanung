@@ -6,7 +6,7 @@ from data_manager import DailyToursManager
 window = ttk.Frame()
 datamanager = DailyToursManager()
 
-notebook = ttk.Notebook(window)
+notebook = ttk.Notebook(window, style="Success")
 notebook.pack(fill="both", expand=True)
 day_configs = {}
 
