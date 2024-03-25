@@ -24,8 +24,6 @@ class ToggleEntryCombo:
             
         
 
-
-
 class TourItem:
     def __init__(self, master_list, number, wave, alt_time, index):
         self.uberframe = ttk.Frame(master_list.frame)
