@@ -113,11 +113,32 @@ class ColorChangingButton2:
         for button in self.other_buttons:
             button.deactivate_button()
 
+class OptionalEntry:
+    def __init__(self, master, entry_value):
+        self.active = False
+        self.entry_var = tk.StringVar(value = entry_value)
+        self.frame = ttk.Frame(master, height="32", width="72")
+        self.entry = ttk.Entry(self.frame, textvariable=self.entry_var)
+        self.frame.pack_propagate(False)
+        
+    def activate(self):
+        self.active = True
+        self.entry.pack(fill = "both", expand=True)  
+        
+    
+    def deactivate(self):
+        self.active = False
+        self.entry.pack_forget()
+        
+    def get(self):
+        return self.entry.get()
+
 
 
 class ColorChangingButton3:
-    def __init__(self, master, label, active_color="gray72", inactive_color="gray85", command=None):
+    def __init__(self, master, label, index, active_color="gray84", inactive_color="white", command=None):
 
+        self.index = index
         self.frame = tk.Frame(master, width=32, height=32)
         self.active = False
         self.label = tk.Label(self.frame, text = label, font="Myriad")
@@ -128,7 +149,7 @@ class ColorChangingButton3:
         
         self.bind_widgets("<Button-1>", self.on_click)
         
-        self.label.pack()
+        self.label.place(relx="0.5", rely="0.5", anchor="center")
         
         self.frame.pack_propagate(False)
 
@@ -151,15 +172,15 @@ class ColorChangingButton3:
         self.frame.config(bg=self.active_color)
         self.label.config(bg=self.active_color, fg="black")
         if self.command:
-            self.command(self.active)
+            self.command(True)
         
         
     def deactivate_button(self):
         self.active = False
         self.frame.config(bg=self.inactive_color)
-        self.label.config(bg=self.inactive_color, fg="black")    
+        self.label.config(bg=self.inactive_color, fg="gray54")    
         if self.command:
-            self.command(self.active)
+            self.command(False)
         
     def add_other_buttons(self, buttons):
         self.other_buttons = [button for button in buttons if button != self]
@@ -194,10 +215,16 @@ class ToggleButton(tk.Frame):
     def set_active_button(self, active_index):
         # Update the active button and deactivate others
         self.buttons[active_index].activate_button()
+        
+    def return_state():
+        for n ,button in enumerate(self.buttons):
+            if button.active == True:
+                return 
+                
                 
                 
 class ToggleButton2:
-    def __init__(self, master, labels, state=0, active_color="gray72", inactive_color="gray85", command=None):
+    def __init__(self, master, labels, state=0, active_color="gray72", inactive_color="gray85", command=None, command_button_index = -1):
         self.frame = ttk.Frame(master)
         
         self.active_color = active_color
@@ -206,23 +233,30 @@ class ToggleButton2:
         self.command = command
         self.buttons = []   
         self.state = state
+        self.command_index = command_button_index
         
-        for label in self.labels[0:-1]:
-            self.buttons.append(ColorChangingButton3(self.frame, label, active_color=self.active_color))
-        self.buttons.append(ColorChangingButton3(self.frame, labels[-1], command=command, active_color=self.active_color))
+        for n, label in enumerate(self.labels):
+            self.buttons.append(ColorChangingButton3(self.frame, label, index= n, active_color=self.active_color))
+        
         
         for button in self.buttons:
             button.add_other_buttons(self.buttons)
-            button.frame.pack()
+            button.frame.pack(side= "left")
             
         self.buttons[self.state].activate_button()
+        
+        if self.command:
+            self.buttons[self.command_index].command = self.command
         
         
     def set_active_button(self, active_index):
         # Update the active button and deactivate others
         self.buttons[active_index].activate_button()   
         
-
+    def return_state():
+        for n ,button in enumerate(self.buttons):
+            if button.active == True:
+                return n
         
     
             
