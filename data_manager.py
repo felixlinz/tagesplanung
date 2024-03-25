@@ -67,8 +67,37 @@ class DailyHoursManager:
                 writer.writerow([day, hours])
 
 
+class DailyToursManager:
+    def __init__(self, base_filename="data_{weekday}.csv"):
+        self.base_filename = base_filename
 
-    
+    def _get_filename(self, weekday):
+        """
+        Generate a filename based on the given weekday.
+        """
+        return self.base_filename.format(weekday=weekday.lower())
+
+    def read_data(self, weekday):
+        """
+        Read data from the file corresponding to the given weekday.
+        """
+        filename = self._get_filename(weekday)
+        if not os.path.exists(filename):
+            return []  # Return an empty list if the file does not exist
+        
+        with open(filename, mode='r', newline='') as file:
+            reader = csv.reader(file)
+            return [(row[0], int(row[1]), row[2]) for row in reader]
+
+    def save_data(self, data, weekday):
+        """
+        Save the given data to the file corresponding to the given weekday.
+        """
+        filename = self._get_filename(weekday)
+        with open(filename, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            for item in data:
+                writer.writerow(item)
 
 
 def learn_data_from_excel(desired_date: datetime.date) -> pd.DataFrame:

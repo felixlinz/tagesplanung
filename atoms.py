@@ -253,7 +253,7 @@ class ToggleButton2:
         # Update the active button and deactivate others
         self.buttons[active_index].activate_button()   
         
-    def return_state():
+    def return_state(self):
         for n ,button in enumerate(self.buttons):
             if button.active == True:
                 return n

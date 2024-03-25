@@ -1,8 +1,9 @@
 import tkinter as tk
 import ttkbootstrap as ttk
 from tour_items import TourItem
+from data_manager import DailyToursManager
 
-tourlist = [
+tourlist1 = [
  ('001', 1, ''),
  ('002', 3, '18:59'),
  ('003', 1, ''),
@@ -29,7 +30,7 @@ tourlist2 = [("001", 3, "09:59")]
 
 class TourList:
     def __init__(self, master, list):
-        self.frame = ttk.Frame(master)      
+        self.frame = ttk.Frame(master, height="400")      
         self.touren = []
         
         for n, dataset in enumerate(tourlist):
@@ -38,9 +39,27 @@ class TourList:
             self.touren.append(item)
         
         for item in self.touren:
-            item.frame.pack(side="top")
+            item.uberframe.pack(side="top")
+            
+    def get_updated_values(self):
+        updated_list = []
+        for item in self.touren:
+            updated_list.append(item.return_values())
+        return updated_list
+
+def print_values():
+    datamanager.save_data(tour_list.get_updated_values(), weekday="dienstag")
+    for item in tour_list.get_updated_values():
+        print(item)
+    
+
 
 window = ttk.Frame()
+datamanager = DailyToursManager()
+tourlist = datamanager.read_data("Dienstag")
+button = ttk.Button(window, text="return", command=print_values)
+button.pack()
 tour_list = TourList(window, tourlist)
-
+tour_list.frame.pack()
+window.pack()
 window.mainloop()
