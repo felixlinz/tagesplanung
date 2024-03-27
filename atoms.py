@@ -191,7 +191,33 @@ class ColorChangingButton3:
                 button.deactivate_button()
 
         
-        
+class TimeCaptureUnit:
+    def __init__(self, master):
+        self.master = master
+        self.frame = ttk.Frame(self.master)
+        self.jobvariable = tk.StringVar()
+        self.timevariable = tk.StringVar()
+        self.job_entry = ttk.Entry(self.frame, textvariable=self.jobvariable )
+        self.time_entry = ttk.Entry(self.frame, textvariable=self.timevariable)
+        self.job_entry.pack(side= "left")
+        self.time_entry.pack(side="left")
+    
+    def values(self):
+        return (self.jobvariable.get(), self.timevariable.get())
+    
+class TimeFilledUnit:
+    def __init__(self, master, job, time):
+        self.master = master
+        self.frame = ttk.Frame(self.master)
+        self.jobvariable = tk.StringVar(value= job)
+        self.timevariable = tk.StringVar(value= time)
+        self.job_entry = ttk.Entry(self.frame, textvariable=self.jobvariable )
+        self.time_entry = ttk.Entry(self.frame, textvariable=self.timevariable)
+        self.job_entry.pack(side= "left")
+        self.time_entry.pack(side="left")
+    
+    def values(self):
+        return (self.jobvariable.get(), self.timevariable.get())
             
             
             

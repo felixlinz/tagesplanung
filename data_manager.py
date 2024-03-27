@@ -38,7 +38,7 @@ class TimeManager:
     def read_times(self):
         with open(self.filename, mode='r') as file:
             reader = csv.reader(file)
-            self.times = {rows[0]: rows[1] for rows in reader}
+            self.times = [(row[0], row[1]) for row in reader]
         return self.times
 
     def save_times(self, new_times):
@@ -57,7 +57,7 @@ class DailyHoursManager:
     def read_hours(self):
         with open(self.filename, mode='r') as file:
             reader = csv.reader(file)
-            self.hours = {rows[0]: rows[1] for rows in reader}
+            self.hours = [(row[0], row[1]) for row in reader]
         return self.hours
 
     def save_hours(self, new_hours):
