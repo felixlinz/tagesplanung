@@ -192,29 +192,43 @@ class ColorChangingButton3:
 
         
 class TimeCaptureUnit:
-    def __init__(self, master):
+    def __init__(self, master, delete_function):
         self.master = master
+        self.delete_function = delete_function
         self.frame = ttk.Frame(self.master)
         self.jobvariable = tk.StringVar()
         self.timevariable = tk.StringVar()
         self.job_entry = ttk.Entry(self.frame, textvariable=self.jobvariable )
-        self.time_entry = ttk.Entry(self.frame, textvariable=self.timevariable)
+        self.time_entry = ttk.Entry(self.frame, textvariable=self.timevariable, width="4")
+        self.delete_button = ttk.Button(self.frame, text="-", command=self.delete)
         self.job_entry.pack(side= "left")
-        self.time_entry.pack(side="left")
-    
+        self.time_entry.pack(side="left", padx="8")
+        self.delete_button.pack(side="left")
+        
+    def delete(self):
+        self.delete_function(self)
+      
     def values(self):
-        return (self.jobvariable.get(), self.timevariable.get())
+        data = (self.jobvariable.get(), self.timevariable.get())
+        return data
+    
     
 class TimeFilledUnit:
-    def __init__(self, master, job, time):
+    def __init__(self, master, job, time, delete_function):
         self.master = master
+        self.delete_function = delete_function
         self.frame = ttk.Frame(self.master)
         self.jobvariable = tk.StringVar(value= job)
         self.timevariable = tk.StringVar(value= time)
+        self.delete_button = ttk.Button(self.frame, text="-", command=self.delete)
         self.job_entry = ttk.Entry(self.frame, textvariable=self.jobvariable )
-        self.time_entry = ttk.Entry(self.frame, textvariable=self.timevariable)
+        self.time_entry = ttk.Entry(self.frame, textvariable=self.timevariable, width="4")
         self.job_entry.pack(side= "left")
-        self.time_entry.pack(side="left")
+        self.time_entry.pack(side="left", padx="8")
+        self.delete_button.pack(side="left")
+    
+    def delete(self):
+        self.delete_function(self)
     
     def values(self):
         return (self.jobvariable.get(), self.timevariable.get())

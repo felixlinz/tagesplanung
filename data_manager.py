@@ -28,7 +28,7 @@ def delete_data_file(file_path="data.csv"):
         return False
 
 
-class TimeManager:
+class TimeDataManager:
     def __init__(self, filename="startzeiten.csv"):
         self.filename = filename
         self.times = {}
@@ -44,7 +44,7 @@ class TimeManager:
     def save_times(self, new_times):
         with open(self.filename, mode='w', newline='') as file:
             writer = csv.writer(file)
-            for label, time in new_times.items():
+            for label, time in new_times:
                 writer.writerow([label, time])
 
 
