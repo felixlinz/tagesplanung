@@ -62,12 +62,12 @@ class EntryTourItem:
         self.tour_number_variable = tk.StringVar(value=number)
         self.tour_number = ttk.Entry(self.frame, width="3", textvariable=self.tour_number_variable)
         self.tour_number.config(font=("Myriad Pro", "12"))
-        self.add_button = ttk.Button(self.frame, text="+", command=lambda: self.command(self.return_values()))
-        self.toggle_combo = ToggleEntryCombo(self.frame, 0, "00:00" )
-        self.add_button.pack(side="left", padx="8")
+        self.add_button = ttk.Button(self.frame, text=u"\u2713", command=lambda: self.command(self.return_values()))
+        self.toggle_combo = ToggleEntryCombo(self.frame, 0, "00:00" )   
         self.tour_number.pack(side="left", pady="12")
         self.toggle_combo.frame.pack(side="left", pady="12")
         self.frame.pack(side="top", padx="16")
+        self.add_button.pack(side="left", padx="8")
         separator = ttk.Separator(self.uberframe, orient='horizontal')
         separator.pack(side="bottom", fill='x')
         
@@ -100,7 +100,7 @@ class TourList:
             self.touren.append(item)
         
         self.refresh()
-            
+        
     def refresh(self):
         self.touren.sort(key=lambda x: int(x.tour_number))
         for item in self.touren:
@@ -118,19 +118,52 @@ class TourList2:
     def __init__(self, master, tourlist):
         self.frame = tk.Canvas(master, height="400")      
         self.touren = []
+        self.tour_numbers = set()
         
-        for n, dataset in enumerate(tourlist):
+        for dataset in tourlist:
             tour_number, wave_number, alt_time = dataset
             item = TourItem(self, tour_number, wave_number, alt_time)
+            self.tour_numbers.add(int(tour_number))
             self.touren.append(item)
         
+        for item in self.touren:
+            item.uberframe.pack(side="top")
+        
         self.refresh()
-            
+              
     def refresh(self):
+        # Sort the list first
         self.touren.sort(key=lambda x: int(x.tour_number))
+        
+        # Remove duplicates: Create a new list without duplicates
+        unique_touren = []
+        seen_numbers = set()
+        for item in self.touren:
+            if item.tour_number not in seen_numbers:
+                unique_touren.append(item)
+                seen_numbers.add(item.tour_number)
+        
+        # Now unique_touren has all unique items, sorted by tour_number
+        self.touren = unique_touren
+        
+        # Clear the existing items from the GUI
+        for item in self.frame.winfo_children():
+            item.pack_forget()
+        
+        # Repack the items in self.touren
         for item in self.touren:
             item.uberframe.pack(side="top")
             
+    def add_tour(self, tour_number, wave, alt_time):
+        if tour_number not in self.tour_numbers:
+            if int(tour_number) > max(self.tour_numbers):
+                self.touren.append(TourItem(self, tour_number, wave, alt_time))
+                self.refresh()
+            else:
+                self.touren.sort(key=lambda x: int(x.tour_number))
+                self.touren[-1].uberframe.pack(side="top")
+                
+        
             
     def get_updated_values(self):
         updated_list = []

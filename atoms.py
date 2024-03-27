@@ -117,7 +117,7 @@ class OptionalEntry:
     def __init__(self, master, entry_value):
         self.active = False
         self.entry_var = tk.StringVar(value = entry_value)
-        self.frame = ttk.Frame(master, height="32", width="72")
+        self.frame = ttk.Frame(master, height="32", width="54")
         self.entry = ttk.Entry(self.frame, textvariable=self.entry_var)
         self.frame.pack_propagate(False)
         
@@ -216,10 +216,10 @@ class ToggleButton(tk.Frame):
         # Update the active button and deactivate others
         self.buttons[active_index].activate_button()
         
-    def return_state():
+    def return_state(self):
         for n ,button in enumerate(self.buttons):
             if button.active == True:
-                return 
+                return n
                 
                 
                 

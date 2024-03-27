@@ -1,8 +1,3 @@
-# import tkinter as tk
-import ttkbootstrap as ttk
-from tour_items import TourItem, TourList, TourList2, EntryTourItem
-from data_manager import DailyToursManager
-
 class DaysEditor:
     def __init__(self, master):
         self.frame = ttk.Frame(master)
@@ -71,10 +66,3 @@ class DayTab:
         item.uberframe.destroy()
         self.tourlist.add_tour(tour_number, wave, alt_time)
         self.add_button.pack()
-        
-datamanager = DailyToursManager()    
-master = ttk.Frame()
-daytab = DaysEditor(master)
-daytab.frame.pack()
-master.pack()
-master.mainloop()
