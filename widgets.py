@@ -4,7 +4,7 @@ from tkinter import ttk
 from datetime import timedelta
 from datetime import datetime
 from atoms import ColorChangingButton, TourItem, TourItemCreator, ColorChangingButton2
-from data_manager import TimeManager
+from data_manager import TimeDataManager
 from data_manager import DailyHoursManager
 from data_manager import get_next_working_day, format_date_with_weekday
 

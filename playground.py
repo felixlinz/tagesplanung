@@ -1,10 +1,10 @@
 # import tkinter as tk
 import ttkbootstrap as ttk
-from times_manager import TimeManager
+from times_manager import DailyTimesManager, FilledDayTimeAdjuster
 
 
 master = ttk.Frame()
-datamanager = TimeManager(master)
-datamanager.frame.pack(fill="both", expand=True, pady=8)
+datamanager = DailyTimesManager(master)
+datamanager.frame.pack()
 master.pack()
 master.mainloop()
