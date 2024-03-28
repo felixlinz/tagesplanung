@@ -63,7 +63,7 @@ class DailyHoursManager:
     def save_hours(self, new_hours):
         with open(self.filename, mode='w', newline='') as file:
             writer = csv.writer(file)
-            for day, hours in new_hours.items():
+            for day, hours in new_hours:
                 writer.writerow([day, hours])
 
 

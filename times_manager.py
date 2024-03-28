@@ -47,30 +47,52 @@ class DailyTimesManager:
     def __init__(self, master):
         self.master = master
         self.frame = ttk.Frame(self.master)
+        self.times_frame = ttk.Frame(self.frame)
         self.datamanager = DailyHoursManager()
         self.data = self.datamanager.read_hours()
         self.days = []
-        for dayset in self.data:
-            day, duration = dayset
-            self.days.append(FilledDayTimeAdjuster(self.frame, day, duration, self.refresh))
-        for day in self.days:
-            day.frame.pack(side="top")
+        if len(self.data) == 6:
+            for dayset in self.data:
+                day, duration = dayset
+                self.days.append(FilledDayTimeAdjuster(self.times_frame, day, duration, self.refresh))
+        else:
+            days = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"] 
+            for day in days:
+                self.days.append(FilledDayTimeAdjuster(self.times_frame, day, "8:00", self.refresh))
             
-        self.total_frame = ttk.Frame(self.master)
-        self.total_label = ttk.Label(self.total_frame, text="Gesamt:")
+        for day in self.days:
+            day.frame.pack(side="top", padx=16)
+            
+        self.times_frame.pack(side="top")
+        self.total_frame = ttk.Frame(self.frame)
+        self.total_label = ttk.Label(self.total_frame, text="Gesamt:", width=8)
         self.total_variable = tk.StringVar(value=self.total_time())
         self.total_time_label = ttk.Label(self.total_frame, textvariable=self.total_variable)
         self.total_label.pack(side="left", pady="8", padx="8")
-        self.total_time_label.pack(side="left", padx="8")
-        self.total_frame.pack(side="bottom")
+        self.total_time_label.pack(side="left", padx="8",)
+        self.separator = ttk.Separator(self.frame, orient='horizontal')
         
+        self.save_frame = ttk.Frame(self.frame)
+        self.save_button = ttk.Button(self.save_frame, text="Speichern", command=self.save)
         
+        self.total_frame.pack(side="top", padx=8)
+        self.separator.pack(side="top", fill="x", padx=16)
+        self.save_button.pack(side="right", pady=16)
+        self.save_frame.pack(side="right", padx=16)
+        
+    def return_data(self):
+        timesets = []
+        for item in self.days:
+            timesets.append((item.day, item.duration_variable.get()))
+        
+        return timesets
+            
     def total_time(self):
         # Initialize the total duration as 0
         total_duration = timedelta()
         # Sum all time durations
         for item in self.days:
-            time_string = item.time
+            time_string = item.duration_variable.get()
             hours, minutes = map(int, time_string.split(":"))
             total_duration += timedelta(hours=hours, minutes=minutes)
         
@@ -81,7 +103,10 @@ class DailyTimesManager:
         return f"{total_hours:02d}:{total_minutes:02d}"
             
     def refresh(self):
-        self.total_variable = self.total_time()
+        self.total_variable.set(self.total_time())
+        
+    def save(self):
+        self.datamanager.save_hours(self.return_data())
         
         
 class FilledDayTimeAdjuster:
@@ -90,18 +115,24 @@ class FilledDayTimeAdjuster:
         self.refresh = refresh
         self.frame = ttk.Frame(self.master)
         self.day = day
-        self.time = time
         self.duration_variable = tk.StringVar(value=time)
-        self.day_label = ttk.Label(self.master, text = day)
-        self.duration_entry = ttk.Entry(self.master, width="4", textvariable=self.duration_variable)
+        self.day_label = ttk.Label(self.frame, text = day, width=12)
+        self.duration_entry = ttk.Entry(self.frame, width="4", textvariable=self.duration_variable)
         self.day_label.pack(side="left", pady=16)
-        self.duration_entry.pack(side="left")
+        self.duration_entry.pack(side="right")
         
         self.duration_entry.bind('<Return>', self.on_enter)
+        self.duration_entry.bind('<FocusOut>', self.on_focus_out)
+
 
     def on_enter(self, *args):
         # This method is called whenever an entry's value changes.
         # Here, call the refresh method.
+        self.refresh()
+        self.duration_entry.master.focus_set()
+        
+    def on_focus_out(self, event):
+        # This method is called when the widget loses focus.
         self.refresh()
         
     def return_data(self):
