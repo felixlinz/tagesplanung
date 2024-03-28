@@ -166,6 +166,10 @@ class TourList2:
                 
 class TagesplanungTourList:
     def __init__(self, master, tourlist, tagesplanung):
+        """
+        dataframe relevant  info not working
+        
+        """
         self.tourlist = tourlist # [(tourstring, wave, alt_time)]
         self.tagesplanung = tagesplanung
         self.stammfahrer = self.tagesplanung["Stammfahrer"]
