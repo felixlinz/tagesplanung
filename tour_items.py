@@ -89,6 +89,42 @@ class EntryTourItem:
             alt_time = ""
         return (self.tour_number.get(), self.toggle_combo.return_state() +1, alt_time, self)   
                 
+                
+class EntryTourItem2:
+    def __init__(self, master, command, number ="001"):
+        self.command = command
+        self.uberframe = ttk.Frame(master)
+        self.frame = ttk.Frame(self.uberframe, height="64", width= "256")
+        self.tour_number_variable = tk.StringVar(value=number)
+        self.tour_number = ttk.Entry(self.frame, width="3", textvariable=self.tour_number_variable)
+        self.tour_number.config(font=("Myriad Pro", "12"))
+        self.add_button = ttk.Button(self.frame, text=u"\u2713", command=lambda: self.command(self.return_values()))
+        self.toggle_combo = ToggleEntryCombo(self.frame, 0, "00:00" )   
+        self.tour_number.pack(side="left", pady="12")
+        self.toggle_combo.frame.pack(side="left", pady="12")
+        self.frame.pack(side="top", padx="16")
+        self.add_button.pack(side="left", padx="8")
+        separator = ttk.Separator(self.uberframe, orient='horizontal')
+        separator.pack(side="bottom", fill='x')
+        
+        
+    def self_add(self):
+        if self.toggle_combo.toggle_button.return_state() == 2:
+            alt_time = self.toggle_combo.alt_time
+        else:
+            alt_time = ""
+        self.list.touren.add(TourItem(self.list, self.tour_number.get(), self.toggle_combo.return_state() + 1, alt_time))
+        self.uberframe.destroy()
+        
+        
+    def return_values(self):
+        wave = self.toggle_combo.return_state() + 1
+        if self.toggle_combo.toggle_button.return_state() == 2:
+            alt_time = self.toggle_combo.alt_time
+        else:
+            alt_time = ""
+        return (self.tour_number.get(), self.toggle_combo.return_state() +1, alt_time, self)   
+                
 class TourList:
     def __init__(self, master, tourlist):
         self.frame = ttk.Frame(master, height="400")      
@@ -116,7 +152,7 @@ class TourList:
 
 class TourList2:
     def __init__(self, master, tourlist):
-        self.frame = tk.Canvas(master, height="400")      
+        self.frame = tk.Canvas(master, height="400")    
         self.touren = []
         self.tour_numbers = set()
         
@@ -174,6 +210,7 @@ class TagesplanungTourList:
         self.tagesplanung = tagesplanung
         self.stammfahrer = self.tagesplanung["Stammfahrer"]
         self.springer = self.tagesplanung["Springer"]
+        self.used_names = set()
         self.abrufer = self.tagesplanung["Abrufer"]
         self.firmenzusteller = self.tagesplanung["Firmen"]
         self.Einweisung = self.tagesplanung["Einweisung"]
@@ -184,7 +221,16 @@ class TagesplanungTourList:
         for dataset in self.tourlist:
             tour_number, wave_number, alt_time = dataset
             filtered_df = self.stammfahrer[self.stammfahrer['Stammtour'] == int(tour_number)]
-            item = DriverTourItem(self, filtered_df["Name"], tour_number, wave_number, alt_time)
+            if not filtered_df.empty:
+                driver_name = filtered_df["Name"].iloc[0]
+            else:
+                if name := self.get_unused_name(self.springer):
+                    driver_name = name
+                else:
+                    if name := self.get_unused_name(self.abrufer):
+                        driver_name = name
+                        
+            item = DriverTourItem(self, driver_name, tour_number, wave_number, alt_time)
             self.tour_numbers.add(int(tour_number))
             self.touren.append(item)
         
@@ -192,6 +238,29 @@ class TagesplanungTourList:
             item.uberframe.pack(side="top")
         
         self.refresh()
+        
+    def get_unused_name(self, df):
+        """
+        Selects an unused name from the given DataFrame.
+
+        Args:
+        df (pd.DataFrame): The DataFrame to select the name from.
+
+        Returns:
+        str or None: Returns a name that hasn't been used yet, or None if no unused names are available.
+        """
+        # Filter the DataFrame to only include names that haven't been used yet
+        available_names = df[~df['Name'].isin(self.used_names)]['Name']
+
+        if not available_names.empty:
+            # If there are available names, select the first one
+            name_value = available_names.iloc[0]
+            # Mark this name as used by adding it to the set
+            self.used_names.add(name_value)
+            return name_value
+        else:
+            # Return None if no unused names are available
+            return None
               
     def refresh(self):
         # Sort the list first

@@ -158,6 +158,22 @@ def get_next_working_day(current_day):
     return next_day
 
 
+def get_next_file_day(lastdate, filename="Personalplanung 2023.xlsx"):
+        # Read the excel file using pandas
+    df = pd.read_excel(filename, engine='openpyxl', header=None)
+    
+    # Find the column that matches the provided date by searching row 4 (Python uses 0-based indexing)
+    matching_col_idx = None
+    for idx, value in enumerate(df.iloc[3]):
+        
+        if isinstance(value, datetime):
+            datevalue = value.date()
+            
+            if datevalue == desired_date:
+                matching_col_idx = idx
+                break
+    
+    
 def format_date_with_weekday(date_obj):
     # Dictionary for translating weekdays from English to German
     weekdays_translation = {

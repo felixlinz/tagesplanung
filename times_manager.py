@@ -8,6 +8,7 @@ class TimeManager:
     def __init__(self, master):
         self.master = master
         self.frame = ttk.Frame(self.master)
+        self.framename = "Arbeitsbeginne"
         self.datamanager = TimeDataManager()
         self.pairs = []
         for line in self.datamanager.read_times():
@@ -47,6 +48,7 @@ class DailyTimesManager:
     def __init__(self, master):
         self.master = master
         self.frame = ttk.Frame(self.master)
+        self.framename = "Arbeitsdauer"
         self.times_frame = ttk.Frame(self.frame)
         self.datamanager = DailyHoursManager()
         self.data = self.datamanager.read_hours()

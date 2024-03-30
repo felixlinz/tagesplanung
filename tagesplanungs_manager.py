@@ -1,36 +1,42 @@
-from data_manager import DailyToursManager
-from tour_items import TourList2, EntryTourItem
-import ttkbootstrap as ttk
 import tkinter as tk
-
-
-class DaysEditor:
+import ttkbootstrap as ttk
+from datetime import date 
+from tour_items import TagesplanungTourList, EntryTourItem2
+from data_manager import learn_data_from_excel
+from data_manager import get_next_working_day
+    
+class TagesplanungEditor:
     def __init__(self, master):
         self.frame = ttk.Frame(master)
-        self.framename = "Tage bearbeiten"
-        self.datamanager = DailyToursManager()
+        self.framename = "Tagesplanung"
+        self.working_days = self.get_working_days()
 
         self.notebook = ttk.Notebook(self.frame, style="journal")
         self.notebook.pack(fill="both", expand=True)
         day_configs = {}
 
-        # Days of the week in German (excluding Sunday)
-        days = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
-
         # Initialize DayConfig for each day and create a tab
-        for day in days:
+        for day in self.working_days:
+            day_string = str(day)
             day_frame = ttk.Frame(self.notebook)
-            self.notebook.add(day_frame, text=day)
-            day_configs[day] = DayTab(day_frame, day)
+            self.notebook.add(day_frame, text=day_string)
+            day_configs[day] = TagesplanungDayTab(day_frame, day)
+            
+    def get_working_days(self):
+        days = []
+        days.append(get_next_working_day(date.today()))
+        for _ in range(2):
+            days.append(get_next_working_day(days[-1]))
+        return days
 
-
-class DayTab:
+    
+class TagesplanungDayTab:
     def __init__(self, master, day):
         self.master = master
         self.day = day
         self.uberframe = ttk.Frame(master)
         self.frame = ttk.Frame(self.uberframe, borderwidth=1, relief="solid")
-        self.datamanager = DailyToursManager()
+        self.day_data = learn_data_from_excel(day)
         self.data = self.datamanager.read_data(day)
 
         # Create a Canvas for the scrolling area
@@ -42,7 +48,7 @@ class DayTab:
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
         self.frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
 
-        self.tourlist = TourList2(self.scrollable_frame, self.data)
+        self.tourlist = TagesplanungTourList(self.scrollable_frame, self.data)
         if len(self.tourlist.touren) >= 1:
             self.tourlist.frame.pack(side="top")
         
@@ -77,7 +83,7 @@ class DayTab:
         
     def query_extra_tour(self):
         self.add_button.pack_forget()
-        entry_item = EntryTourItem(self.controls_frame, command=self.add_tour, number= self.get_number())
+        entry_item = EntryTourItem2(self.controls_frame, command=self.add_tour, number= self.get_number())
         entry_item.uberframe.pack(side="top")
         
     def get_number(self):

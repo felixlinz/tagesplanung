@@ -10,50 +10,46 @@ from data_manager import get_next_working_day, format_date_with_weekday
 
 
 class SideMenu:
-    def __init__(self, master, width=200):
+    def __init__(self, master, width=200, *frames):
         self.master = master
         self.width = width
         self.buttons = []
-        self.frames = {}
+        self.frames = {}  # This will now map frame names to frame instances
         self.current_frame = None
 
         # Create the side menu frame
         self.frame = tk.Frame(master, width=self.width)
         self.frame.pack(side="left", fill="y", padx=(8, 8))
-        
-        self.init_frames()
 
-        # Add buttons
-        self.add_button("Tagesplanung", command=lambda: self.switch_frame(NextDaysPlan))
-        self.add_button("Zeiten", command=lambda: self.switch_frame(KombinierteZeitKonfiguration))
-        self.add_button("Touren", command=lambda: self.switch_frame(TourenKonfiguration))
+        # Initialize frames passed as arguments
+        for frame_instance in frames:
+            self.init_frame(frame_instance)
 
-        
-        for button in self.buttons:
-            button.add_other_buttons(self.buttons)
-            
-        self.buttons[0].activate_button()
-        self.switch_frame(NextDaysPlan)
-        
-    def switch_frame(self, frame_class):
+        # Initialize buttons based on frames
+        for frame_name, frame_instance in self.frames.items():
+            self.add_button(frame_name, lambda frame_class=frame_instance: self.switch_frame(frame_class))
+
+        if self.buttons:
+            self.buttons[0].activate_button()  # Activate the first button by default
+            self.switch_frame(frames[0])  # Switch to the first frame by default
+
+    def switch_frame(self, frame_instance):
         if self.current_frame is not None:
             self.current_frame.frame.pack_forget()  # Hide the current frame
 
-        # Retrieve the frame instance from the dictionary
-        self.current_frame = self.frames[frame_class]
-        self.current_frame.frame.pack(fill="both", expand=True, pady=10)  # Show the frame
+        # Set and show the new current frame
+        self.current_frame = frame_instance
+        self.current_frame.frame.pack(fill="both", expand=True, pady=10)
 
     def add_button(self, text, command):
-        button = ColorChangingButton2(self, text, command=command)
+        button = ColorChangingButton2(self.frame, text, command=command)  # Assuming ColorChangingButton2 is defined elsewhere
         self.buttons.append(button)
+        button.pack(pady=2)  # Pack the button into the side menu frame
 
-    def init_frames(self):
-        # Create instances of all frames here and store them
-        self.frames[TourenKonfiguration] = TourenKonfiguration(self.master)        
-        self.frames[NextDaysPlan] = NextDaysPlan(self.master)
-        self.frames[KombinierteZeitKonfiguration] = KombinierteZeitKonfiguration(self.master)#
-        # self.frames[TourenKonfiguration] = TourenKonfiguration(self.master)
-
+    def init_frame(self, frame_instance):
+        # Use the frame instance's framename attribute for the button text and as the key in the frames dictionary
+        frame_name = getattr(frame_instance, 'framename', 'Unnamed Frame')  # Default to 'Unnamed Frame' if framename is not set
+        self.frames[frame_name] = frame_instance
 
 
 

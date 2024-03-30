@@ -3,23 +3,29 @@ from datetime import datetime
 from datetime import date
 import pandas as pd
 import ttkbootstrap as ttk
-from data_manager import learn_data_from_excel, sort_workers, DailyToursManager
+from data_manager import learn_data_from_excel, sort_workers, DailyToursManager, get_next_file_day
 from tour_items import TagesplanungTourList
+from tagesplanungs_manager import TagesplanungEditor
+from widgets import SideMenu
 
-date_string = "2023-03-28"  # Your date string here
-date_format = "%Y-%m-%d"  # The format of your date string
+print(get_next_file_day(date.today()))
 
-date_obj = datetime.strptime(date_string, date_format).date()
+# date_string = "2023-03-28"  # Your date string here
+# date_format = "%Y-%m-%d"  # The format of your date string
 
-dfs = sort_workers(learn_data_from_excel(date.today()))
+# date_obj = datetime.strptime(date_string, date_format).date()
 
-master = ttk.Frame()
-datamanager = DailyToursManager()
-day_data = datamanager.read_data("tuesday")
-dataeditor = TagesplanungTourList(master, day_data, dfs)
-dataeditor.frame.pack()
-master.pack()
-master.mainloop()
+# dfs = sort_workers(learn_data_from_excel(date.today()))
+
+# master = ttk.Frame()
+# sidemenu = SideMenu(master)
+# datamanager = DailyToursManager()
+# tagesplanung = TagesplanungEditor(master)
+# tagesplanung.frame.pack()
+# master.pack()
+# master.mainloop()
+
+
 
 
 """print("Stammfahrer")
