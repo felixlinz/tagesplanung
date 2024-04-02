@@ -3,7 +3,7 @@ import tkinter as tk
 from atoms import ToggleButton2, OptionalEntry
 
 class ToggleEntryCombo:
-    def __init__(self, master, wave_index, alt_time):
+    def __init__(self, master, wave_index, alt_time, grandparent=None):
         self.frame = ttk.Frame(master)
         self.alt_time = alt_time
         self.toggle_button = ToggleButton2(self.frame, ["1", "2", "?"], command=self.activate_entry, command_button_index=2)
@@ -25,7 +25,8 @@ class ToggleEntryCombo:
         
 
 class TourItem:
-    def __init__(self, master_list, number, wave, alt_time):
+    def __init__(self, master_list, number, wave, alt_time, grandparent = None):
+        self.grandparent = grandparent
         self.uberframe = ttk.Frame(master_list.frame)
         self.parent = master_list
         self.tour_number = number
@@ -151,7 +152,8 @@ class TourList:
         
 
 class TourList2:
-    def __init__(self, master, tourlist):
+    def __init__(self, master, tourlist, grandparent=None):
+        self.grandparent = grandparent
         self.frame = tk.Canvas(master, height="400")    
         self.touren = []
         self.tour_numbers = set()

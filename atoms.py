@@ -136,8 +136,8 @@ class OptionalEntry:
 
 
 class ColorChangingButton3:
-    def __init__(self, master, label, index, active_color="gray84", inactive_color="white", command=None):
-
+    def __init__(self, master, label, index, active_color="gray84", inactive_color="white", command=None, grandparent=None):
+        self.grandparent = grandparent
         self.index = index
         self.frame = tk.Frame(master, width=32, height=32)
         self.active = False
@@ -173,6 +173,8 @@ class ColorChangingButton3:
         self.label.config(bg=self.active_color, fg="black")
         if self.command:
             self.command(True)
+        if self.grandparent:
+            self.grandparent.activate_save_buttons()
         
         
     def deactivate_button(self):
