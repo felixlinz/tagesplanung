@@ -36,11 +36,12 @@ class DaysEditor:
     def save_all(self):
         """Save data for all days."""
         for day, day_tab in self.day_configs.items():
+            day_tab.save_button.state["disabled"]
             day_tab.save()
             
-    def switch_save_buttons(self):
+    def activate_save_buttons(self):
         for day, day_tab in self.day_configs.items():
-            day_tab.save_button.state(["!Disabled"])
+            day_tab.save_button.state(['!disabled'])
         
 
 class DayTab:
@@ -53,8 +54,7 @@ class DayTab:
         self.frame = ttk.Frame(self.uberframe, borderwidth=1, relief="solid")
         self.datamanager = DailyToursManager()
         self.data = self.datamanager.read_data(day)
-        self.bind_click_events(self.uberframe)
-
+        
         # Create a Canvas for the scrolling area
         self.canvas = tk.Canvas(self.frame, width = 322, height=556)
         self.scrollbar = ttk.Scrollbar(self.frame, orient="vertical", command=self.canvas.yview)
@@ -79,17 +79,20 @@ class DayTab:
         self.controls_frame.pack(side="top", fill="x", expand=True, pady="8")
         self.save_frame.pack(side="top", fill="x", pady="8")
         self.uberframe.pack(pady="8")
+        self.bind_click_events(self.uberframe)
+
         
     def bind_click_events(self, widget):
         """Bind click events to the widget and all its descendants."""
         widget.bind("<Button-1>", self.on_click)
+
 
         for child in widget.winfo_children():
             self.bind_click_events(child)  # Recursively bind to children
 
     def on_click(self, event):
         """Handle click events."""
-        self.update_save_button_state()
+        self.parent.activate_save_buttons()
 
     def update_save_button_state(self):
         self.parent.switch_save_buttons()
