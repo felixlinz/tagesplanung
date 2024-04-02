@@ -2,8 +2,8 @@ import tkinter as tk
 import ttkbootstrap as ttk
 from datetime import date 
 from tour_items import TagesplanungTourList, EntryTourItem2
-from data_manager import learn_data_from_excel
-from data_manager import get_next_working_day
+from data_manager import learn_data_from_excel, get_next_file_day
+from data_manager import sort_workers, DailyToursManager
     
 class TagesplanungEditor:
     def __init__(self, master):
@@ -24,9 +24,9 @@ class TagesplanungEditor:
             
     def get_working_days(self):
         days = []
-        days.append(get_next_working_day(date.today()))
+        days.append(get_next_file_day(date.today()))
         for _ in range(2):
-            days.append(get_next_working_day(days[-1]))
+            days.append(get_next_file_day(days[-1]))
         return days
 
     
@@ -37,7 +37,10 @@ class TagesplanungDayTab:
         self.uberframe = ttk.Frame(master)
         self.frame = ttk.Frame(self.uberframe, borderwidth=1, relief="solid")
         self.day_data = learn_data_from_excel(day)
-        self.data = self.datamanager.read_data(day)
+        self.data = sort_workers(self.day_data)
+        self.day_tours_manager = DailyToursManager()
+        self.day_tours = self.day_tours_manager.read_data(str(self.day))
+
 
         # Create a Canvas for the scrolling area
         self.canvas = tk.Canvas(self.frame, width = 322, height=556)
@@ -48,7 +51,7 @@ class TagesplanungDayTab:
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
         self.frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
 
-        self.tourlist = TagesplanungTourList(self.scrollable_frame, self.data)
+        self.tourlist = TagesplanungTourList(self.scrollable_frame, self.day_tours, self.data)
         if len(self.tourlist.touren) >= 1:
             self.tourlist.frame.pack(side="top")
         

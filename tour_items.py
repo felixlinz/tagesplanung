@@ -199,6 +199,13 @@ class TourList2:
                 self.touren.sort(key=lambda x: int(x.tour_number))
                 self.touren[-1].uberframe.pack(side="top")
                 
+    def get_updated_values(self):
+        updated_list = []
+        for item in self.touren:
+            updated_list.append(item.return_values())
+        return updated_list
+                    
+    
                 
 class TagesplanungTourList:
     def __init__(self, master, tourlist, tagesplanung):

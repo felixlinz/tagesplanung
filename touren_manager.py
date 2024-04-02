@@ -22,6 +22,8 @@ class DaysEditor:
             day_frame = ttk.Frame(self.notebook)
             self.notebook.add(day_frame, text=day)
             day_configs[day] = DayTab(day_frame, day)
+            
+            
 
 
 class DayTab:

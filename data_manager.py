@@ -1,5 +1,8 @@
 import csv
 import os
+import tkinter as tk
+import ttkbootstrap as ttk
+from tkinter import filedialog
 from datetime import datetime, date, timedelta
 import os
 import pandas as pd
@@ -27,6 +30,37 @@ def delete_data_file(file_path="data.csv"):
         print(f"'{file_path}' does not exist.")
         return False
 
+
+class PathManager:
+    def __init__(self, master):
+        self.frame = ttk.Frame(master)
+        self.labelframe = ttk.Frame(self.frame)
+        self.filename = "path.txt"
+        self.pathvariable = ttk.StringVar(value= self.return_path())
+        self.path_label_pretext = ttk.Label(self.labelframe, text= "Pfad: ")
+        self.path_label = ttk.Label(self.labelframe, textvariable=self.pathvariable)
+        self.path_button = ttk.Button(self.frame, text="Personalplanungs Datei ändern", command=self.query_path)
+        self.path_label_pretext.pack(side="left", padx="16")
+        self.path_label.pack(side= "left", padx="16")
+        self.labelframe.pack(padx="16")
+        self.path_button.pack(padx="16", pady="16")
+        
+    def query_path(self):
+        self.file_path = filedialog.askopenfilename()
+        
+        if self.file_path:  # Check if a file was selected.
+            self.save_path(self.file_path)
+        
+    def save_path(self, path):
+        self.pathvariable.set(path)
+        with open(self.filename, mode="w") as pathfile:
+            pathfile.write(path)
+            
+    def return_path(self):
+        with open(self.filename, mode="r") as pathfile:
+            return pathfile.read().strip()
+            
+        
 
 class TimeDataManager:
     def __init__(self, filename="startzeiten.csv"):
@@ -169,9 +203,19 @@ def get_next_file_day(lastdate, filename="Personalplanung 2023.xlsx"):
         if isinstance(value, datetime):
             datevalue = value.date()
             
-            if datevalue == desired_date:
+            if datevalue == lastdate:
+                matching_col_idx = idx + 1
+                return df.iloc[3][matching_col_idx].date()
+            
+    for idx, value in enumerate(df.iloc[3]):
+        if isinstance(value, datetime):
+            datevalue = value.date()
+            
+            if datevalue > date.today():
                 matching_col_idx = idx
-                break
+                return df.iloc[3][matching_col_idx].date()
+                
+                
     
     
 def format_date_with_weekday(date_obj):
