@@ -36,7 +36,7 @@ class DaysEditor:
     def save_all(self):
         """Save data for all days."""
         for day, day_tab in self.day_configs.items():
-            day_tab.save_button.state["disabled"]
+            day_tab.save_button.state(["disabled"])
             day_tab.save()
             
     def activate_save_buttons(self):
@@ -64,7 +64,7 @@ class DayTab:
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
         self.frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
 
-        self.tourlist = TourList2(self.scrollable_frame, self.data)
+        self.tourlist = TourList2(self.scrollable_frame, self.data, parent = self)
         if len(self.tourlist.touren) >= 1:
             self.tourlist.frame.pack(side="top")
         
@@ -104,7 +104,7 @@ class DayTab:
         return save_frame
     
     def save(self):
-        self.save_button.state("Normal")
+        self.save_button.state(['!disabled'])
         self.datamanager.save_data(self.tourlist.get_updated_values(), self.day)   
 
     def controls(self):

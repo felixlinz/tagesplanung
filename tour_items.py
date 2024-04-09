@@ -152,8 +152,9 @@ class TourList:
         
 
 class TourList2:
-    def __init__(self, master, tourlist, grandparent=None):
+    def __init__(self, master, tourlist, grandparent=None, parent=None):
         self.grandparent = grandparent
+        self.parent = None
         self.frame = tk.Canvas(master, height="400")    
         self.touren = []
         self.tour_numbers = set()
@@ -191,6 +192,12 @@ class TourList2:
         # Repack the items in self.touren
         for item in self.touren:
             item.uberframe.pack(side="top")
+            
+        self.frame.configure(scrollregion=self.frame.bbox("all"))
+        if self.parent:
+            self.parent.canvas.configure(scrollregion=self.parent.canvas.bbox("all"))
+
+
             
     def add_tour(self, tour_number, wave, alt_time):
         if tour_number not in self.tour_numbers:
