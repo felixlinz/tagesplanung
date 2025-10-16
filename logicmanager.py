@@ -2,10 +2,17 @@ class TourAssigner:
     """
     Assign requested tours to drivers (Stammfahrer preferred, else backup pool).
     Backup pool = non-requested Stammfahrer + Springer + Abrufer.
+    Uses EmployeeTaskLogManager for experience-based suggestions.
     """
 
-    def __init__(self, sorted_data: dict):
+    def __init__(self, sorted_data: dict, task_log_manager=None):
+        """
+        Args:
+            sorted_data (dict): grouped employee data from sort_workers()
+            task_log_manager (EmployeeTaskLogManager, optional): experience tracker
+        """
         self.data = sorted_data
+        self.task_log_manager = task_log_manager
         self.assignments = []
         self.unassigned = []
 
@@ -19,7 +26,7 @@ class TourAssigner:
         springer    = self.data.get("Springer", [])
         abrufer     = self.data.get("Abrufer", [])
 
-        # Split Stammfahrer into those whose tour is requested vs. free
+        # Stammfahrer who have their tour requested vs. free
         matched_stammfahrer = [
             p for p in stammfahrer
             if str(p.get("Stammtour")).strip() in requested_tour_strs
@@ -29,10 +36,10 @@ class TourAssigner:
             if str(p.get("Stammtour")).strip() not in requested_tour_strs
         ]
 
-        # Combine all backups into one common pool
+        # Combine all backups
         backup_pool = free_stammfahrer + springer + abrufer
 
-        # Assign tours
+        # 🎯 Assign tours
         for tour in requested_tours:
             tour_str = str(tour).strip()
 
@@ -50,31 +57,21 @@ class TourAssigner:
                 driver_name = match["Name"]
                 assigned_names.add(driver_name)
             else:
-                # Otherwise take any unused person from backup pool
-                backup = next(
-                    (p for p in backup_pool if p["Name"] not in assigned_names),
-                    None
-                )
-                if backup:
-                    driver_name = backup["Name"]
+                # No Stammfahrer → look for the best backup
+                driver_name = self._select_best_backup(backup_pool, assigned_names, tour_str)
+                if driver_name:
                     assigned_names.add(driver_name)
-                else:
-                    driver_name = None  # nobody left
 
             assignments.append({
                 "tour": tour,
-                "driver": driver_name
+                "driver": driver_name or None
             })
 
-        # Determine leftovers (unassigned from backup + unused matched)
-        eligible_people = [
-            p["Name"] for p in (matched_stammfahrer + backup_pool)
-        ]
-        self.unassigned = [
-            name for name in eligible_people if name not in assigned_names
-        ]
+        # Determine leftovers (unused backups)
+        eligible_people = [p["Name"] for p in (matched_stammfahrer + backup_pool)]
+        self.unassigned = [n for n in eligible_people if n not in assigned_names]
 
-        # Add the fixed categories (unchanged)
+        # Non-tour categories for the API response
         other_categories = {}
         for key in [
             "Frühdienst",
@@ -86,12 +83,31 @@ class TourAssigner:
         ]:
             other_categories[key] = [p["Name"] for p in self.data.get(key, [])]
 
-        # Final result
-        result = {
+        return {
             "assignments": assignments,
             **other_categories,
             "unassigned": self.unassigned,
         }
 
-        self.assignments = assignments
-        return result
+    def _select_best_backup(self, backup_pool, assigned_names, tour_str) -> str | None:
+        """
+        Selects the most experienced available backup for a tour.
+        Uses EmployeeTaskLogManager if available, else falls back to first-come.
+        """
+        available = [p for p in backup_pool if p["Name"] not in assigned_names]
+        if not available:
+            return None
+
+        if self.task_log_manager:
+            # Get top drivers for this tour from the log
+            top_from_log = self.task_log_manager.get_top_employees_for_task(tour_str)
+            top_names = [name for name, _ in top_from_log]
+
+            # Prefer available backups who appear in the top list
+            for preferred in top_names:
+                match = next((p for p in available if p["Name"] == preferred), None)
+                if match:
+                    return match["Name"]
+
+        # fallback: pick first available if no experience data
+        return available[0]["Name"] if available else None

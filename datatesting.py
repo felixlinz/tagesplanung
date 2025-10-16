@@ -5,7 +5,7 @@ from datetime import date
 import pprint
 
 def main():
-    datalogging()
+    tour_assigment_test()
     
     
 def datalearner_test():
@@ -39,7 +39,7 @@ def job_attribute_test():
 
 
 def tour_assigment_test():
-    requested_tours = [1, 2, 3, 4, 5, 6, 7, 9, 11, 12, 15, 22, 23, 24, 28, 31, 32, 40, 41, 42, 43, 44, 46]
+    requested_tours = [1, 2, 3, 4, 5, 6, 7, 9, 11, 12, 15, 22, 23, 28, 31, 32, 40, 41, 42, 43, 44, 46]
 
     manager = ExcelManager(date(2025,8,26))
     pprint.pp(manager.sorted)
