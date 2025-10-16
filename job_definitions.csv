@@ -1,0 +1,3 @@
+Job,TimeRef1,TimeRef2,Symbol,Color,Active
+Innendienst,Frühschicht,Spätschicht,ID,"(255, 200, 0)",1
+Abholung,,,AB,"(120, 180, 255)",0

@@ -1,0 +1,3 @@
+Job,Symbol,Time,Color,Bezirk,Welle
+Innendienst,ID,07:45,"(255, 200, 0)",1,0
+Spätdienst,S,13:30,"(120, 180, 255)",0,1
