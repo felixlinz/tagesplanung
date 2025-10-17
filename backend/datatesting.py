@@ -5,7 +5,7 @@ from datetime import date
 import pprint
 
 def main():
-    tour_assigment_test()
+    daily_hours_test()
     
     
 def datalearner_test():
@@ -61,8 +61,8 @@ def daily_hours_test():
         "Mittwoch": "07:30",
         "Donnerstag": "08:00",
         "Freitag": "06:45",
-        "Samstag": "",
-        "Sonntag": ""
+        "Samstag": "07:00",
+        "Sonntag": "07:00"
     })
 
     print(manager.load_worktimes())

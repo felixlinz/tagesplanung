@@ -8,7 +8,7 @@ class WeekdayTourListManager:
     Each weekday corresponds to exactly one CSV file.
     """
 
-    def __init__(self, base_directory: str = "weekday_tours"):
+    def __init__(self, base_directory: str = "data/weekday_tours"):
         """
         Args:
             base_directory (str): Folder where weekday CSVs are stored.
@@ -96,7 +96,7 @@ class JobDefinitionManager:
       - an active flag (boolean)
     """
 
-    def __init__(self, filename: str = "job_definitions.csv"):
+    def __init__(self, filename: str = "data/job_definitions.csv"):
         """
         Args:
             filename (str): Path to CSV file storing job definitions.
@@ -204,9 +204,6 @@ class JobDefinitionManager:
         return False
 
 
-import os
-import csv
-
 class TimeReferenceManager:
     """
     Manages storing and retrieving time reference values.
@@ -219,7 +216,7 @@ class TimeReferenceManager:
         }
     """
 
-    def __init__(self, filename: str = "time_references.csv"):
+    def __init__(self, filename: str = "data/time_references.csv"):
         """
         Args:
             filename (str): Path to CSV file where time references are stored.
@@ -287,7 +284,7 @@ class WeekdayWorktimeManager:
     Each entry maps a weekday name (e.g. 'Montag') to a time string (e.g. '07:45').
     """
 
-    def __init__(self, filename: str = "work_durations.csv"):
+    def __init__(self, filename: str = "data/work_durations.csv"):
         """
         Args:
             filename (str): Path to CSV file where weekday work durations are stored.
@@ -354,7 +351,7 @@ class BreakTimeManager:
     Stored as a single time value (e.g. '00:30').
     """
 
-    def __init__(self, filename: str = "break_time.csv"):
+    def __init__(self, filename: str = "data/break_time.csv"):
         """
         Args:
             filename (str): Path to CSV file where the break time is stored.
@@ -417,7 +414,7 @@ class ContactManager:
     Data is stored in a single CSV file, with each row as a name–number pair.
     """
 
-    def __init__(self, filename: str = "contacts.csv"):
+    def __init__(self, filename: str = "data/contacts.csv"):
         """
         Args:
             filename (str): Path to CSV file where contacts are stored.
@@ -569,7 +566,7 @@ class EmployeeTaskLogManager:
     and can report the most experienced employees per task.
     """
 
-    def __init__(self, filename: str = "employee_task_log.csv"):
+    def __init__(self, filename: str = "data/employee_task_log.csv"):
         self.filename = filename
         os.makedirs(os.path.dirname(filename) or ".", exist_ok=True)
 
